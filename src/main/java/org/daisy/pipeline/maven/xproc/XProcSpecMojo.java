@@ -4,10 +4,15 @@ import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.google.common.base.Predicates;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
 
 import static org.daisy.pipeline.maven.xproc.utils.asURI;
+import static org.daisy.pipeline.maven.xproc.utils.unpack;
 
 /**
  * Run an XProcSpec test.
@@ -31,11 +36,25 @@ public class XProcSpecMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File reportsDirectory;
-	
-	private static final String pipeline = asURI(XProcSpecMojo.class.getResource("/xml/xproc/xprocspec.xpl"));
+
+	/**
+	 * Temporary directory for storing XProcSpec source files.
+	 *
+	 * @parameter default-value="${project.build.directory}/xprocspec"
+	 * @required
+	 * @readonly
+	 */
+	private File tempDir;
 	
 	public void execute() throws MojoExecutionException {
 		try {
+			String pipeline;
+			if (engine instanceof Calabash)
+				pipeline = asURI(XProcSpecMojo.class.getResource("/xml/xproc/xprocspec.xpl"));
+			else {
+				for (String resource : new Reflections("xml.xproc", new ResourcesScanner()).getResources(Predicates.<String>alwaysTrue()))
+					unpack(XProcSpecMojo.class.getResource("/" + resource), new File(tempDir, resource.substring("xml/xproc/".length())));
+				pipeline = asURI(new File(tempDir, "xprocspec.xpl")); }
 			reportsDirectory.mkdirs();
 			DirectoryScanner scanner = new DirectoryScanner();
 			scanner.setBasedir(xprocspecDirectory);

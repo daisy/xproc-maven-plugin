@@ -1,6 +1,8 @@
 package org.daisy.pipeline.maven.xproc;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
@@ -31,5 +33,25 @@ public abstract class utils {
 			else
 				return new URI(base).resolve(new URI(href)).toASCIIString(); }
 		catch (Exception e) { throw new RuntimeException(e); }
+	}
+
+	public static boolean unpack(URL url, File file) {
+		if (file.exists()) return false;
+		try {
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+			FileOutputStream writer = new FileOutputStream(file);
+			url.openConnection();
+			InputStream reader = url.openStream();
+			byte[] buffer = new byte[153600];
+			int bytesRead = 0;
+			while ((bytesRead = reader.read(buffer)) > 0) {
+				writer.write(buffer, 0, bytesRead);
+				buffer = new byte[153600]; }
+			writer.close();
+			reader.close();
+			return true; }
+		catch (Exception e) {
+			throw new RuntimeException("Exception occured during unpacking of file '" + file.getName() + "'", e); }
 	}
 }
