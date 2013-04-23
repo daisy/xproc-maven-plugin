@@ -30,13 +30,13 @@ public class XProcSpecMojo extends AbstractMojo {
 	 * @parameter expression="${project.build.directory}/xprocspec-reports"
 	 * @required
 	 */
-	private File reportDirectory;
+	private File reportsDirectory;
 	
-	private static final String pipeline = asURI(XProcSpecMojo.class.getResource("/no/josteinaj/xprocspec/xprocspec.xpl"));
+	private static final String pipeline = asURI(XProcSpecMojo.class.getResource("/xml/xproc/xprocspec.xpl"));
 	
 	public void execute() throws MojoExecutionException {
 		try {
-			reportDirectory.mkdirs();
+			reportsDirectory.mkdirs();
 			DirectoryScanner scanner = new DirectoryScanner();
 			scanner.setBasedir(xprocspecDirectory);
 			scanner.setIncludes(new String[]{"*.xprocspec"});
@@ -45,10 +45,10 @@ public class XProcSpecMojo extends AbstractMojo {
 				Map<String,String> input = new HashMap<String,String>();
 				Map<String,String> output = new HashMap<String,String>();
 				input.put("source", asURI(new File(xprocspecDirectory, f)));
-				output.put("result", asURI(new File(reportDirectory, f.replaceAll("\\.xprocspec$", ".html"))));
-				engine.run(pipeline, input, output, null, null); }
-			System.out.println("Running XProcSpec tests ..."); }
+				output.put("junit", asURI(new File(reportsDirectory, f.replaceAll("^(.*)\\.xprocspec$", "TEST-$1.xml"))));
+				getLog().info("Running XProcSpec test '" + f + "' ...");
+				engine.run(pipeline, input, output, null, null); }}
 		catch (Exception e) {
-			throw new MojoExecutionException("Error running XProcSpec test" ,e); }
+			throw new MojoExecutionException("Error running XProcSpec test", e); }
 	}
 }
