@@ -1,5 +1,6 @@
 package org.daisy.pipeline.maven.xproc;
 
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.Map;
 
@@ -46,16 +47,18 @@ public class Calabash implements XProcEngine {
 					xpipeline.passOption(new QName("", name), new RuntimeValue(options.get(name)));
 			if (parameters != null)
 				for (String port : parameters.keySet())
-					for (String name : parameters.get(port))
+					for (String name : parameters.get(port).keySet())
 						xpipeline.setParameter(port, new QName("", name), new RuntimeValue(parameters.get(port).get(name)));
 			xpipeline.run();
 			if (outputs != null)
 				for (String port : xpipeline.getOutputs())
 					if (outputs.containsKey(port)) {
+						String outFile = new URI(outputs.get(port)).getPath();
 						WritableDocument wdoc = new WritableDocument(
 							runtime,
-							new URI(outputs.get(port)).getPath(),
-							xpipeline.getSerialization(port));
+							outFile,
+							xpipeline.getSerialization(port),
+							new FileOutputStream(outFile));
 						ReadablePipe rpipe = xpipeline.readFrom(port);
 						while (rpipe.moreDocuments())
 							wdoc.write(rpipe.read()); }}
