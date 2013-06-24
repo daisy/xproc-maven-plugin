@@ -5,6 +5,19 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+
+import net.sf.saxon.xpath.XPathFactoryImpl;
+
+import org.xml.sax.InputSource;
 
 public abstract class utils {
 	
@@ -53,5 +66,40 @@ public abstract class utils {
 			return true; }
 		catch (Exception e) {
 			throw new RuntimeException("Exception occured during unpacking of file '" + file.getName() + "'", e); }
+	}
+	
+	private static XPath xpath = new XPathFactoryImpl().newXPath();
+	
+	public static Object evaluateXPath(File file, String expression, final Map<String,String> namespaces, Class<?> type) {
+		try {
+			if (namespaces != null)
+				xpath.setNamespaceContext(
+					new NamespaceContext() {
+						public String getNamespaceURI(String prefix) {
+							return namespaces.get(prefix); }
+						public String getPrefix(String namespaceURI) {
+							for (String prefix : namespaces.keySet())
+								if (namespaces.get(prefix).equals(namespaceURI))
+									return prefix;
+							return null; }
+						public Iterator<String> getPrefixes(String namespaceURI) {
+							List<String> prefixes = new ArrayList<String>();
+							for (String prefix : namespaces.keySet())
+								if (namespaces.get(prefix).equals(namespaceURI))
+									prefixes.add(prefix);
+							return prefixes.iterator(); }});
+			else
+				xpath.setNamespaceContext(null);
+			XPathExpression expr = xpath.compile(expression);
+			InputSource source = new InputSource(file.toURI().toURL().openStream());
+			if (type.equals(Boolean.class))
+				return expr.evaluate(source, XPathConstants.BOOLEAN);
+			if (type.equals(String.class))
+				return expr.evaluate(source, XPathConstants.STRING);
+			else
+				throw new RuntimeException("Cannot evaluate to a " + type.getName()); }
+		catch (Exception e) {
+			throw new RuntimeException("Exception occured during XPath evaluation.", e); }
+		
 	}
 }
