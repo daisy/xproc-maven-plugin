@@ -76,9 +76,46 @@
               <goal>install</goal>
               <goal>run</goal>
             </goals>
+            <configuration>
+              <pomIncludes>
+                <pomInclude>*-calabash/pom.xml</pomInclude>
+              </pomIncludes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>dp2</id>
+      <activation>
+        <property>
+          <name>dp2Available</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>integration-test-with-dp2</id>
+                <goals>
+                  <goal>install</goal>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <pomIncludes>
+                    <pomInclude>*-dp2/pom.xml</pomInclude>
+                  </pomIncludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
