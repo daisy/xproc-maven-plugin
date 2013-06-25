@@ -15,6 +15,7 @@ Run a series of XProcSpec tests.
 
 - `xprocspecDirectory` Directory containing the XProcSpec tests. Default `${basedir}/src/test/xprocspec`
 - `reportsDirectory` Directory that will contain the generated reports. Default `${project.build.dir}/xprocspec-reports`
+- `surefireReportsDirectory` Directory that will contain standard Surefire reports. Default `${project.build.dir}/surefire-reports`
 
 Usage
 -----
@@ -50,14 +51,6 @@ Usage
 For rendering the XProcSpec reports in HTML:
 
 ```xml
-    <plugin>
-      <groupId>org.daisy.pipeline.maven</groupId>
-      <artifactId>xproc-maven-plugin</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <configuration>
-        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-      </configuration>
-      ...
 <reporting>
   <plugins>
     <plugin>
