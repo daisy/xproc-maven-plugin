@@ -58,12 +58,6 @@ public class XProcSpecMojo extends AbstractMojo {
 	 */
 	private File tempDir;
 	
-	private static Map<String,String> ns = new HashMap<String,String>();
-	static {
-		ns.put("x", "http://www.daisy.org/ns/pipeline/xproc/test");
-		ns.put("c", "http://www.w3.org/ns/xproc-step");
-	}
-	
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		
 		getLog().info("------------------------------------------------------------------------");
@@ -80,6 +74,7 @@ public class XProcSpecMojo extends AbstractMojo {
 					unpack(XProcSpecMojo.class.getResource("/" + resource), new File(srcDir, resource.substring("xml/xproc/".length())));
 				pipeline = asURI(new File(srcDir, "xprocspec.xpl")); }
 			reportsDirectory.mkdirs();
+			surefireReportsDirectory.mkdirs();
 			DirectoryScanner scanner = new DirectoryScanner();
 			scanner.setBasedir(xprocspecDirectory);
 			scanner.setIncludes(new String[]{"*.xprocspec"});
@@ -94,19 +89,20 @@ public class XProcSpecMojo extends AbstractMojo {
 				input.put("source", asURI(new File(xprocspecDirectory, test)));
 				String testName = test.replaceAll("^(.*)\\.xprocspec$", "$1");
 				File report = new File(reportsDirectory, testName + ".xml");
+				File surefireReport = new File(surefireReportsDirectory, "TEST-" + testName + ".xml");
 				output.put("result", asURI(report));
-				output.put("junit", asURI(new File(surefireReportsDirectory, "TEST-" + testName + ".xml")));
+				output.put("junit", asURI(surefireReport));
 				options.put("temp-dir", asURI(tempDir) + "/tmp/");
 				getLog().info("Running: " + testName);
 				engine.run(pipeline, input, output, options, null);
-				if (!(Boolean)evaluateXPath(report, "//x:scenario-results[not(x:test-result/@result='true')]", ns, Boolean.class))
-					getLog().info("...SUCCESS");
-				else if ((Boolean)evaluateXPath(report, "//x:test-result/c:was/c:errors", ns, Boolean.class)) {
+				if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@errors) > 0", null, Boolean.class)) {
 					errors.add(testName);
 					getLog().info("...ERROR"); }
-				else {
+				else if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@failures) > 0", null, Boolean.class)) {
 					failures.add(testName);
-					getLog().info("...FAILED"); }}
+					getLog().info("...FAILED"); }
+				else
+					getLog().info("...SUCCESS"); }
 			getLog().info("");
 			getLog().info("Summary:");
 			getLog().info("--------");
