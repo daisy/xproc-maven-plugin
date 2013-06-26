@@ -36,7 +36,8 @@ public class Calabash implements XProcEngine {
 	                Map<String,String> inputs,
 	                Map<String,String> outputs,
 	                Map<String,String> options,
-	                Map<String,Map<String,String>> parameters) {
+	                Map<String,Map<String,String>> parameters)
+			throws XProcExecutionException {
 		try {
 			XPipeline xpipeline = runtime.load(pipeline);
 			if (inputs != null)
@@ -62,6 +63,7 @@ public class Calabash implements XProcEngine {
 						ReadablePipe rpipe = xpipeline.readFrom(port);
 						while (rpipe.moreDocuments())
 							wdoc.write(rpipe.read()); }}
-		catch (Exception e) { throw new RuntimeException(e); }
+		catch (Exception e) {
+			throw new XProcExecutionException("Calabash failed to execute XProc", e); }
 	}
 }

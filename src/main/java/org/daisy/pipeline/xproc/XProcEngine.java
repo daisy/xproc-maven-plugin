@@ -7,5 +7,6 @@ public interface XProcEngine {
 	                Map<String,String> inputs,
 	                Map<String,String> outputs,
 	                Map<String,String> options,
-	                Map<String,Map<String,String>> parameters);
+	                Map<String,Map<String,String>> parameters)
+			throws XProcExecutionException;
 }

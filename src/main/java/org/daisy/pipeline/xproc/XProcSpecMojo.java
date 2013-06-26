@@ -94,15 +94,23 @@ public class XProcSpecMojo extends AbstractMojo {
 				output.put("junit", asURI(surefireReport));
 				options.put("temp-dir", asURI(tempDir) + "/tmp/");
 				getLog().info("Running: " + testName);
-				engine.run(pipeline, input, output, options, null);
-				if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@errors) > 0", null, Boolean.class)) {
+				try {
+					engine.run(pipeline, input, output, options, null);
+					if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@errors) > 0", null, Boolean.class)) {
+						errors.add(testName);
+						getLog().info("...ERROR"); }
+					else if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@failures) > 0", null, Boolean.class)) {
+						failures.add(testName);
+						getLog().info("...FAILED"); }
+					else
+						getLog().info("...SUCCESS"); }
+				catch (XProcExecutionException e) {
 					errors.add(testName);
-					getLog().info("...ERROR"); }
-				else if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@failures) > 0", null, Boolean.class)) {
-					failures.add(testName);
-					getLog().info("...FAILED"); }
-				else
-					getLog().info("...SUCCESS"); }
+					getLog().info("...ERROR");
+					getLog().error(e.getMessage());
+					Throwable cause = e.getCause();
+					if (cause != null)
+						getLog().debug(cause); }}
 			getLog().info("");
 			getLog().info("Summary:");
 			getLog().info("--------");
@@ -124,7 +132,7 @@ public class XProcSpecMojo extends AbstractMojo {
 		catch (MojoFailureException e) {
 			throw e; }
 		catch (Exception e) {
-			throw new MojoExecutionException("Error running XProcSpec test suite", e); }
+			throw new MojoExecutionException("Unexpected error", e); }
 		
 	}
 }
