@@ -118,4 +118,34 @@
       </build>
     </profile>
   </profiles>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <name>Maven Central</name>
+      <url>http://repo.maven.apache.org/maven2/</url>
+    </repository>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>oss.sonatype.org github Release Repository Snapshot Repository</name>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>oss.sonatype.org Staging Repository</name>
+      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>oss.sonatype.org github Release Repository Snapshot Repository</name>
+      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
