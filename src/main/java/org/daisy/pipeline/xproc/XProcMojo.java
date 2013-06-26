@@ -1,10 +1,10 @@
-package org.daisy.pipeline.maven.xproc;
+package org.daisy.maven.xproc;
 
 import java.io.File;
 
 import org.apache.maven.plugin.MojoExecutionException;
 
-import static org.daisy.pipeline.maven.xproc.utils.asURI;
+import static org.daisy.maven.xproc.utils.asURI;
 
 /**
  * Run an XProc pipeline.

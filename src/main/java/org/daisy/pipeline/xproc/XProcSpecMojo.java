@@ -1,4 +1,4 @@
-package org.daisy.pipeline.maven.xproc;
+package org.daisy.maven.xproc;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,9 +14,9 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
-import static org.daisy.pipeline.maven.xproc.utils.asURI;
-import static org.daisy.pipeline.maven.xproc.utils.unpack;
-import static org.daisy.pipeline.maven.xproc.utils.evaluateXPath;
+import static org.daisy.maven.xproc.utils.asURI;
+import static org.daisy.maven.xproc.utils.unpack;
+import static org.daisy.maven.xproc.utils.evaluateXPath;
 
 /**
  * Run an XProcSpec test.

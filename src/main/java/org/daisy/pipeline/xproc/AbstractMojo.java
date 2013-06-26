@@ -1,4 +1,4 @@
-package org.daisy.pipeline.maven.xproc;
+package org.daisy.maven.xproc;
 
 public abstract class AbstractMojo extends org.apache.maven.plugin.AbstractMojo {
 	

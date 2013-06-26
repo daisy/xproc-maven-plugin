@@ -1,4 +1,4 @@
-package org.daisy.pipeline.maven.xproc;
+package org.daisy.maven.xproc;
 
 import java.io.FileOutputStream;
 import java.net.URI;
@@ -17,7 +17,7 @@ import com.xmlcalabash.runtime.XPipeline;
 
 import net.sf.saxon.s9api.QName;
 
-import org.daisy.pipeline.maven.xproc.utils;
+import org.daisy.maven.xproc.utils;
 
 import org.xml.sax.InputSource;
 

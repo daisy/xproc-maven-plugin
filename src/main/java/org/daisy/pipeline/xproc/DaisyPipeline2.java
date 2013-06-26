@@ -1,4 +1,4 @@
-package org.daisy.pipeline.maven.xproc;
+package org.daisy.maven.xproc;
 
 import java.util.Map;
 
