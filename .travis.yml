@@ -1,2 +1,11 @@
 language: java
-script: "mvn clean verify"
+script: "mvn deploy --settings .ci-deploy-settings.xml"
+
+branches:
+  only:
+    - master
+
+env:
+  global:
+    - secure: "aM39d+CWKGpE+IMP3UA6ViYDgFXWOnkJjrIIl0Q7+mOFD8KHkFeyrb5ssMZa\ns2bWy7AvlEamDi1ttHT1mlP5r0656yme8E7rnwMNBym4g/Mmo89cM8HfFsRn\nhf+8KYvuPjty6rbdo1vteWHnTorOPuFefceBsMngLDP3VIhT7no="
+    - secure: "nzW3JJZv2+NLNklXpFwF6bJKbbkUw/fY9inL8rKofjc3aCWPVvB4Nv+HbPic\n0uMxHxK9qE0b5QLVGyFVHor0J/jaTCu+9OrX3+nld68Awj8sGjUqBie/d4Fe\n3vAtU0aAlMnb/Tdv/8LEneACyN7uO+N+siv+YSY3dU1+7eC4sQc="
