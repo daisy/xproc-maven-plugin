@@ -24,7 +24,7 @@ Usage
   <plugins>
     ...
     <plugin>
-      <groupId>org.daisy.pipeline.maven</groupId>
+      <groupId>org.daisy.maven</groupId>
       <artifactId>xproc-maven-plugin</artifactId>
       <version>1.0-SNAPSHOT</version>
       <executions>
@@ -40,6 +40,21 @@ Usage
           <groupId>org.daisy.libs</groupId>
           <artifactId>com.xmlcalabash</artifactId>
           <version>1.0.10-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+          <groupId>com.thaiopensource</groupId>
+          <artifactId>jing</artifactId>
+          <version>20091111</version>
+          <exclusions>
+            <exclusion>
+              <groupId>net.sf.saxon</groupId>
+              <artifactId>saxon</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>xml-apis</groupId>
+              <artifactId>xml-apis</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
       </dependencies>
     </plugin>

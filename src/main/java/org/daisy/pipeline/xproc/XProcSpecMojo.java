@@ -67,7 +67,7 @@ public class XProcSpecMojo extends AbstractMojo {
 		try {
 			String pipeline;
 			if (engine instanceof Calabash)
-				pipeline = asURI(XProcSpecMojo.class.getResource("/xml/xproc/xprocspec.xpl"));
+				pipeline = asURI(XProcSpecMojo.class.getResource("/content/xml/xproc/xprocspec.xpl"));
 			else {
 				File srcDir = new File(tempDir, "src");
 				for (String resource : new Reflections("xml.xproc", new ResourcesScanner()).getResources(Predicates.<String>alwaysTrue()))
