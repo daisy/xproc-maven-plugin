@@ -70,9 +70,9 @@ public class XProcSpecMojo extends AbstractMojo {
 				pipeline = asURI(XProcSpecMojo.class.getResource("/content/xml/xproc/xprocspec.xpl"));
 			else {
 				File srcDir = new File(tempDir, "src");
-				for (String resource : new Reflections("xml.xproc", new ResourcesScanner()).getResources(Predicates.<String>alwaysTrue()))
-					unpack(XProcSpecMojo.class.getResource("/" + resource), new File(srcDir, resource.substring("xml/xproc/".length())));
-				pipeline = asURI(new File(srcDir, "xprocspec.xpl")); }
+				for (String resource : new Reflections("content.xml", new ResourcesScanner()).getResources(Predicates.<String>alwaysTrue()))
+					unpack(XProcSpecMojo.class.getResource("/" + resource), new File(srcDir, resource.substring("content/xml/".length())));
+				pipeline = asURI(new File(srcDir, "xproc/xprocspec.xpl")); }
 			reportsDirectory.mkdirs();
 			surefireReportsDirectory.mkdirs();
 			DirectoryScanner scanner = new DirectoryScanner();
