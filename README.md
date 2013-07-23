@@ -39,7 +39,7 @@ Usage
         <dependency>
           <groupId>org.daisy.libs</groupId>
           <artifactId>com.xmlcalabash</artifactId>
-          <version>1.0.10-SNAPSHOT</version>
+          <version>1.0.9</version>
         </dependency>
         <dependency>
           <groupId>com.thaiopensource</groupId>
