@@ -1,5 +1,6 @@
 package org.daisy.maven.xproc;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class Calabash implements XProcEngine {
 				for (String port : xpipeline.getOutputs())
 					if (outputs.containsKey(port)) {
 						String outFile = new URI(outputs.get(port)).getPath();
+						new File(outFile).getParentFile().mkdirs();
 						WritableDocument wdoc = new WritableDocument(
 							runtime,
 							outFile,
