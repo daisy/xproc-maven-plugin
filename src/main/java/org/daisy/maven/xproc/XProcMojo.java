@@ -62,13 +62,18 @@ public class XProcMojo extends AbstractMojo {
 			for (String port : outputs.keySet())
 				outputsAsURIs.put(port, asURI(new File(outputs.get(port)))); }
 		try {
-			System.out.println("Running XProc ...");
+			getLog().info("Running XProc ...");
 			engine.run(pipelineAsURI,
 			           inputsAsURIs,
 			           outputsAsURIs,
 			           options,
 			           null); }
+		catch (XProcExecutionException e) {
+			getLog().error(e.getMessage());
+			Throwable cause = e.getCause();
+			if (cause != null)
+				getLog().debug(cause); }
 		catch (Exception e) {
-			throw new MojoExecutionException("Error running XProc", e); }
+			throw new MojoExecutionException("Unexpected error", e); }
 	}
 }
