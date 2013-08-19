@@ -2,6 +2,7 @@ package org.daisy.maven.xproc;
 
 import java.lang.reflect.UndeclaredThrowableException;
 
+import java.util.List;
 import java.util.Map;
 
 import com.rabbitmq.tools.jsonrpc.JsonRpcException;
@@ -14,7 +15,7 @@ public class DaisyPipeline2 implements XProcEngine {
 	private static XProcService service = new XProcClient().openConnection();
 	
 	public void run(String pipeline,
-	                Map<String,String> inputs,
+	                Map<String,List<String>> inputs,
 	                Map<String,String> outputs,
 	                Map<String,String> options,
 	                Map<String,Map<String,String>> parameters)

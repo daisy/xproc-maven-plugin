@@ -2,6 +2,7 @@ package org.daisy.maven.xproc;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -83,10 +84,10 @@ public class XProcSpecMojo extends AbstractMojo {
 			List<String> failures = new ArrayList<String>();
 			List<String> errors = new ArrayList<String>();
 			for (String test : tests) {
-				Map<String,String> input = new HashMap<String,String>();
+				Map<String,List<String>> input = new HashMap<String,List<String>>();
 				Map<String,String> output = new HashMap<String,String>();
 				Map<String,String> options = new HashMap<String,String>();
-				input.put("source", asURI(new File(xprocspecDirectory, test)));
+				input.put("source", Arrays.asList(new String[]{asURI(new File(xprocspecDirectory, test))}));
 				String testName = test.replaceAll("^(.*)\\.xprocspec$", "$1");
 				File report = new File(reportsDirectory, testName + ".xml");
 				File surefireReport = new File(surefireReportsDirectory, "TEST-" + testName + ".xml");

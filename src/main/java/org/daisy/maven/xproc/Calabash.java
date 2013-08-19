@@ -3,6 +3,7 @@ package org.daisy.maven.xproc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Source;
@@ -34,7 +35,7 @@ public class Calabash implements XProcEngine {
 	}
 	
 	public void run(String pipeline,
-	                Map<String,String> inputs,
+	                Map<String,List<String>> inputs,
 	                Map<String,String> outputs,
 	                Map<String,String> options,
 	                Map<String,Map<String,String>> parameters)
@@ -43,7 +44,8 @@ public class Calabash implements XProcEngine {
 			XPipeline xpipeline = runtime.load(pipeline);
 			if (inputs != null)
 				for (String port : inputs.keySet())
-					xpipeline.writeTo(port, runtime.parse(inputs.get(port), null));
+					for (String document : inputs.get(port))
+						xpipeline.writeTo(port, runtime.parse(document, null));
 			if (options != null)
 				for (String name : options.keySet())
 					xpipeline.passOption(new QName("", name), new RuntimeValue(options.get(name)));

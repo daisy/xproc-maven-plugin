@@ -1,7 +1,9 @@
 package org.daisy.maven.xproc;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -46,12 +48,15 @@ public class XProcMojo extends AbstractMojo {
 	
 	public void execute() throws MojoExecutionException {
 		String pipelineAsURI = asURI(pipeline);
-		Map<String,String> inputsAsURIs = null;
+		Map<String,List<String>> inputsAsURIs = null;
 		Map<String,String> outputsAsURIs = null;
 		if (inputs != null) {
-			inputsAsURIs = new HashMap<String,String>();
-			for (String port : inputs.keySet())
-				inputsAsURIs.put(port, asURI(new File(inputs.get(port)))); }
+			inputsAsURIs = new HashMap<String,List<String>>();
+			for (String port : inputs.keySet()) {
+				String[] sequence = inputs.get(port).trim().split("\\s+");
+				for (int i = 0; i < sequence.length; i++)
+					sequence[i] = asURI(new File(sequence[i]));
+				inputsAsURIs.put(port, Arrays.asList(sequence)); }}
 		if (outputs != null) {
 			outputsAsURIs = new HashMap<String,String>();
 			for (String port : outputs.keySet())
