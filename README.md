@@ -1,4 +1,4 @@
-[xproc-maven-plugin][]
+[xproc-maven-plugin][] [![Build Status](https://travis-ci.org/bertfrees/xproc-maven-plugin.png?branch=master)](https://travis-ci.org/bertfrees/xproc-maven-plugin)
 ======================
 Maven plugin for running [XProc][] pipelines and [XProcSpec][] tests.
 
