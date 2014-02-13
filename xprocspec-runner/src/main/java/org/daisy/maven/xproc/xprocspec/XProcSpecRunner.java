@@ -160,8 +160,10 @@ public class XProcSpecRunner {
 				URL url = (URL)o;
 				if (url.getProtocol().equals("jar"))
 					return new URI("jar:" + new URI(null, url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()).toASCIIString());
-				else
-					return new URI(url.getProtocol(), url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()); }}
+				String authority = (url.getPort() != -1) ?
+					url.getHost() + ":" + url.getPort() :
+					url.getHost();
+				return new URI(url.getProtocol(), authority, url.getPath(), url.getQuery(), url.getRef()); }}
 		catch (Exception e) {}
 		throw new RuntimeException("Object can not be converted to URI: " + o);
 	}
