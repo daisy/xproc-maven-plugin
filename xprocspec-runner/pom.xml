@@ -24,6 +24,7 @@
       <groupId>org.daisy</groupId>
       <artifactId>xprocspec</artifactId>
       <version>[1.0.0-SNAPSHOT,2.0.0)</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>net.sf.saxon</groupId>
