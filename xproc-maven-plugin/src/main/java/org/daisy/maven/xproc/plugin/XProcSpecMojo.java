@@ -63,13 +63,6 @@ public class XProcSpecMojo extends AbstractMojo {
 			public void debug(String message) { logger.debug(message); }
 		};
 		
-		DirectoryScanner scanner = new DirectoryScanner();
-		
-		scanner.setBasedir(xprocspecDirectory);
-		scanner.setIncludes(new String[]{"*.xprocspec"});
-		scanner.scan();
-		String[] tests = scanner.getIncludedFiles();
-		
 		logger.info("------------------------------------------------------------------------");
 		logger.info("XPROCSPEC TESTS");
 		logger.info("------------------------------------------------------------------------");
@@ -77,7 +70,6 @@ public class XProcSpecMojo extends AbstractMojo {
 		XProcSpecRunner runner = new XProcSpecRunner();
 		
 		TestResult[] testResults = runner.run(xprocspecDirectory,
-		                                      tests,
 		                                      reportsDirectory,
 		                                      surefireReportsDirectory,
 		                                      tempDir,

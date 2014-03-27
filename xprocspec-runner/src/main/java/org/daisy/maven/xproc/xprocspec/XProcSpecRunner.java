@@ -1,12 +1,15 @@
 package org.daisy.maven.xproc.xprocspec;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,8 +50,7 @@ public class XProcSpecRunner {
 		}
 	}
 	
-	public TestResult[] run(File testsDir,
-	                        String[] tests,
+	public TestResult[] run(Map<String,File> tests,
 	                        File reportsDir,
 	                        File surefireReportsDir,
 	                        File tempDir,
@@ -58,27 +60,23 @@ public class XProcSpecRunner {
 			activate();
 		
 		if (logger == null)
-			logger = new TestLogger() {
-				public void info(String message) {}
-				public void warn(String message) {}
-				public void error(String message) {}
-				public void debug(String message) {}};
+			logger = new TestLogger.NULL();
 		
 		URI pipeline = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
 		
 		reportsDir.mkdirs();
 		surefireReportsDir.mkdirs();
 		
-		TestResult[] testResults = new TestResult[tests.length];
+		TestResult[] testResults = new TestResult[tests.size()];
 		int i = 0;
-		for (String test : tests) {
+		for (String testName : tests.keySet()) {
 			Map<String,List<String>> input = new HashMap<String,List<String>>();
 			Map<String,String> output = new HashMap<String,String>();
 			Map<String,String> options = new HashMap<String,String>();
-			input.put("source", Arrays.asList(new String[]{asURI(new File(testsDir, test)).toASCIIString()}));
-			String testName = test.replaceAll("\\.xprocspec$", "").replaceAll("[\\./\\\\]", "_");
+			File test = tests.get(testName);
 			File report = new File(reportsDir, testName + ".xml");
 			File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
+			input.put("source", Arrays.asList(new String[]{asURI(test).toASCIIString()}));
 			output.put("result", asURI(report).toASCIIString());
 			output.put("junit", asURI(surefireReport).toASCIIString());
 			options.put("temp-dir", asURI(tempDir) + "/tmp/");
@@ -105,6 +103,22 @@ public class XProcSpecRunner {
 		}
 		
 		return testResults;
+	}
+	
+	public TestResult[] run(File testsDir,
+	                        File reportsDir,
+	                        File surefireReportsDir,
+	                        File tempDir,
+	                        TestLogger logger) {
+		
+		Map<String,File> tests = new HashMap<String,File>();
+		for (File file : listXProcSpecFilesRecursively(testsDir))
+			tests.put(
+				file.getAbsolutePath().substring(testsDir.getAbsolutePath().length() + 1)
+					.replaceAll("\\.xprocspec$", "")
+					.replaceAll("[\\./\\\\]", "_"),
+				file);
+		return run(tests, reportsDir, surefireReportsDir, tempDir, logger);
 	}
 	
 	public static class TestResult {
@@ -141,6 +155,19 @@ public class XProcSpecRunner {
 		private static TestResult SKIPPED(String name) {
 			return new TestResult(name, TestState.SKIPPED);
 		}
+		private static int count(TestResult[] results, TestState state) {
+			int c = 0;
+			for (TestResult result : results)
+				if (result.state == state)
+					c++;
+			return c;
+		}
+		public static int getFailures(TestResult[] results) {
+			return count(results, TestState.FAILURE);
+		}
+		public static int getErrors(TestResult[] results) {
+			return count(results, TestState.ERROR);
+		}
 	}
 	
 	public static interface TestLogger {
@@ -148,6 +175,36 @@ public class XProcSpecRunner {
 		public void warn(String message);
 		public void error(String message);
 		public void debug(String message);
+		public static class NULL implements TestLogger {
+			public void info(String message) {}
+			public void warn(String message) {}
+			public void error(String message) {}
+			public void debug(String message) {}
+		}
+		public static class PrintStreamLogger implements TestLogger {
+			private final PrintStream stream;
+			public PrintStreamLogger(PrintStream stream) {
+				this.stream = stream;
+			}
+			public void info(String message) { stream.println("[INFO] " + message); }
+			public void warn(String message) { stream.println("[WARNING] " + message); }
+			public void error(String message) { stream.println("[ERROR] " + message); }
+			public void debug(String message) { stream.println("[DEBUG] " + message); }
+		}
+	}
+	
+	/*
+	 * FileUtils.listFiles from Apache Commons IO could be used here as well,
+	 * but would introduce another dependency.
+	 */
+	private static Collection<File> listXProcSpecFilesRecursively(File directory) {
+		ImmutableList.Builder<File> builder = new ImmutableList.Builder<File>();
+		for (File file : directory.listFiles()) {
+			if (file.isDirectory())
+				builder.addAll(listXProcSpecFilesRecursively(file));
+			else if (file.getName().endsWith(".xprocspec"))
+				builder.add(file); }
+		return builder.build();
 	}
 	
 	public static URI asURI(Object o) {
