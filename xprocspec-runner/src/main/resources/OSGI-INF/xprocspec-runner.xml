@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate">
+  <scr:component name="XProcSpec runner">
+    <scr:implementation class="org.daisy.maven.xproc.xprocspec.XProcSpecRunner"/>
+    <scr:service>
+      <scr:provide interface="org.daisy.maven.xproc.xprocspec.XProcSpecRunner"/>
+    </scr:service>
+    <scr:reference bind="setXProcEngine"
+                   cardinality="1..1"
+                   interface="org.daisy.maven.xproc.api.XProcEngine"
+                   name="XProcEngine"
+                   policy="static"/>
+  </scr:component>
+</scr:components>

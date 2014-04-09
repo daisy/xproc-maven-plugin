@@ -9,6 +9,9 @@ Goals
 Run an XProc pipeline.
 
 - `pipeline` Path to the pipeline.
+- `inputs` Input paths.
+- `outputs` Output paths.
+- `options` Options.
 
 ### xproc:xprocspec
 Run a series of XProcSpec tests.
@@ -37,24 +40,9 @@ Usage
       </executions>
       <dependencies>
         <dependency>
-          <groupId>org.daisy.libs</groupId>
-          <artifactId>com.xmlcalabash</artifactId>
-          <version>1.0.9</version>
-        </dependency>
-        <dependency>
-          <groupId>com.thaiopensource</groupId>
-          <artifactId>jing</artifactId>
-          <version>20091111</version>
-          <exclusions>
-            <exclusion>
-              <groupId>net.sf.saxon</groupId>
-              <artifactId>saxon</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>xml-apis</groupId>
-              <artifactId>xml-apis</artifactId>
-            </exclusion>
-          </exclusions>
+          <groupId>org.daisy.maven</groupId>
+          <artifactId>xproc-engine-calabash</artifactId>
+          <version>1.0-SNAPSHOT</version>
         </dependency>
       </dependencies>
     </plugin>
