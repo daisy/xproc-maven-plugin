@@ -40,6 +40,25 @@ public class XProcSpecMojo extends AbstractMojo {
 	private File surefireReportsDirectory;
 	
 	/**
+	 * Set this to "true" to skip running tests, but still compile them. Its use
+	 * is NOT RECOMMENDED, but quite convenient on occasion.
+	 *
+	 * @parameter property="skipTests" default-value="false"
+	 */
+	private boolean skipTests;
+
+	/**
+	 * Set this to "true" to bypass unit tests entirely. Its use is NOT
+	 * RECOMMENDED, especially if you enable it using the "maven.test.skip"
+	 * property, because maven.test.skip disables both running the tests and
+	 * compiling the tests. Consider using the <code>skipTests</code> parameter
+	 * instead.
+	 *
+	 * @parameter expression="${maven.test.skip}" default-value="false"
+	 */
+	private boolean skip;
+	
+	/**
 	 * Temporary directory for storing XProcSpec related files.
 	 *
 	 * @parameter default-value="${project.build.directory}/xprocspec"
@@ -49,6 +68,10 @@ public class XProcSpecMojo extends AbstractMojo {
 	private File tempDir;
 	
 	public void execute() throws MojoFailureException {
+		
+		if (skip || skipTests) {
+			getLog().info("Tests are skipped.");
+			return; }
 		
 		XProcSpecRunner runner = new XProcSpecRunner();
 		Reporter.DefaultReporter reporter = new Reporter.DefaultReporter(System.out);
