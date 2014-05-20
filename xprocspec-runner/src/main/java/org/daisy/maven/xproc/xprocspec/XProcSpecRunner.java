@@ -3,8 +3,10 @@ package org.daisy.maven.xproc.xprocspec;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import static com.google.common.io.Files.asByteSink;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
@@ -64,6 +66,8 @@ public class XProcSpecRunner {
 		
 		
 		URI xprocspec = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
+		URI xprocspecSummary = asURI(XProcSpecRunner.class.getResource("/xprocspec-extra/xprocspec-summary.xpl"));
+		URL xspecCss = XProcSpecRunner.class.getResource("/xprocspec-extra/xspec.css");
 		
 		reportsDir.mkdirs();
 		surefireReportsDir.mkdirs();
@@ -111,6 +115,37 @@ public class XProcSpecRunner {
 		
 		long totalTime = TimeUnit.SECONDS.convert(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
 		reporter.finish(totalRun, totalFailures, totalErrors, totalSkipped, totalTime);
+		
+		/* Generate summary */
+		try {
+			StringBuilder testNames = new StringBuilder();
+			StringBuilder surefireReports = new StringBuilder();
+			StringBuilder reports = new StringBuilder();
+			File summary = new File(reportsDir, "index.html");
+			File css = new File(reportsDir, "xspec.css");
+			for (String testName : tests.keySet()) {
+				testNames.append(testName);
+				testNames.append(" ");
+				File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
+				surefireReports.append(asURI(surefireReport).toASCIIString());
+				surefireReports.append(" ");
+				File report = new File(reportsDir, testName + ".html");
+				reports.append(asURI(report).toASCIIString());
+				reports.append(" "); }
+			testNames.deleteCharAt(testNames.length() - 1);
+			surefireReports.deleteCharAt(surefireReports.length() - 1);
+			reports.deleteCharAt(reports.length() - 1);
+			Map<String,String> output = ImmutableMap.of("result", asURI(summary).toASCIIString());
+			Map<String,String> params = ImmutableMap.of("test-names", testNames.toString(),
+			                                            "surefire-reports", surefireReports.toString(),
+			                                            "reports", reports.toString());
+			engine.run(xprocspecSummary.toASCIIString(), null, output, null, ImmutableMap.of("parameters", params));
+			asByteSink(css).writeFrom(xspecCss.openStream()); }
+		catch (XProcExecutionException e) {
+			throw new RuntimeException(e); }
+		catch (IOException e) {
+			throw new RuntimeException(e); }
+		
 		return totalErrors == 0 && totalFailures == 0;
 	}
 	
