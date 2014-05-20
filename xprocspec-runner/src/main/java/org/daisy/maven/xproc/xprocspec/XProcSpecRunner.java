@@ -74,10 +74,10 @@ public class XProcSpecRunner {
 			Map<String,String> output = new HashMap<String,String>();
 			Map<String,String> options = new HashMap<String,String>();
 			File test = tests.get(testName);
-			File report = new File(reportsDir, testName + ".xml");
+			File report = new File(reportsDir, testName + ".html");
 			File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
 			input.put("source", Arrays.asList(new String[]{asURI(test).toASCIIString()}));
-			output.put("result", asURI(report).toASCIIString());
+			output.put("html", asURI(report).toASCIIString());
 			output.put("junit", asURI(surefireReport).toASCIIString());
 			options.put("temp-dir", asURI(tempDir) + "/tmp/");
 			logger.info("Running: " + testName);
