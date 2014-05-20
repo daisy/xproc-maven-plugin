@@ -59,10 +59,12 @@ public class XProcSpecRunner {
 	                   File reportsDir,
 	                   File surefireReportsDir,
 	                   File tempDir,
+	                   File catalog,
 	                   Reporter reporter) {
 		
 		if (engine == null)
 			activate();
+		engine.setCatalog(catalog);
 		
 		
 		URI xprocspec = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
@@ -162,7 +164,9 @@ public class XProcSpecRunner {
 					.replaceAll("\\.xprocspec$", "")
 					.replaceAll("[\\./\\\\]", "_"),
 				file);
-		return run(tests, reportsDir, surefireReportsDir, tempDir, reporter);
+		File catalog = new File(testsDir, "catalog.xml");
+		if (!catalog.exists()) catalog = null;
+		return run(tests, reportsDir, surefireReportsDir, tempDir, catalog, reporter);
 	}
 	
 	public static interface Reporter {

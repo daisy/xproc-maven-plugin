@@ -42,7 +42,7 @@ public class XProcSpecRunnerTest {
 	public void testSuccess() {
 		Map<String,File> tests = ImmutableMap.of("test_identity", new File(testsDir, "test_identity.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir,
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
 		assertThat(stream.toString(), matchesPattern(
 "-------------------------------------------------------"                                + "\n" +
@@ -64,7 +64,7 @@ public class XProcSpecRunnerTest {
 	public void testFailure() {
 		Map<String,File> tests = ImmutableMap.of("test_identity_broken", new File(testsDir, "test_identity_broken.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir,
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
 		assertThat(stream.toString(), matchesPattern(
 "-------------------------------------------------------"                                + "\n" +
@@ -90,7 +90,7 @@ public class XProcSpecRunnerTest {
 		Map<String,File> tests = ImmutableMap.of("test_non_existing", new File(testsDir, "test_non_existing.xprocspec"),
 		                                         "non_existing_test", new File(testsDir, "non_existing_test.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir,
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
 		assertThat(stream.toString(), matchesPattern(
 "-------------------------------------------------------"                                + "\n" +
@@ -122,7 +122,7 @@ public class XProcSpecRunnerTest {
 	public void testPending() {
 		Map<String,File> tests = ImmutableMap.of("test_with_pending", new File(testsDir, "test_with_pending.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir,
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
 		assertThat(stream.toString(), matchesPattern(
 "-------------------------------------------------------"                                + "\n" +
@@ -136,6 +136,43 @@ public class XProcSpecRunnerTest {
 "Tests run: 4, Failures: 0, Errors: 0, Skipped: 2"                                       + "\n"));
 		assertTrue(new File(reportsDir, "test_with_pending.html").exists());
 		assertTrue(new File(surefireReportsDir, "TEST-test_with_pending.xml").exists());
+	}
+	
+	@Test
+	@org.junit.Ignore
+	public void testMocking() {
+		Map<String,File> tests = ImmutableMap.of("test_import_foo", new File(testsDir, "test_import_foo.xprocspec"));
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
+		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
+		assertThat(stream.toString(), matchesPattern(
+"-------------------------------------------------------"                                + "\n" +
+" X P R O C S P E C   T E S T S"                                                         + "\n" +
+"-------------------------------------------------------"                                + "\n" +
+"Running test_import_foo"                                                                + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
+""                                                                                       + "\n" +
+"Results :"                                                                              + "\n" +
+""                                                                                       + "\n" +
+"Tests in error:"                                                                        + "\n" +
+"  test_import_foo"                                                                      + "\n" +
+""                                                                                       + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0"                                       + "\n"));
+		File catalog = new File(testsDir, "catalog.xml");
+		stream.reset();
+		setup();
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, catalog,
+		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
+		assertThat(stream.toString(), matchesPattern(
+"-------------------------------------------------------"                                + "\n" +
+" X P R O C S P E C   T E S T S"                                                         + "\n" +
+"-------------------------------------------------------"                                + "\n" +
+"Running test_import_foo"                                                                + "\n" +
+"Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: ... sec"                + "\n" +
+""                                                                                       + "\n" +
+"Results :"                                                                              + "\n" +
+""                                                                                       + "\n" +
+"Tests run: 2, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
 	}
 	
 	public static class PatternMatcher extends BaseMatcher<String> {

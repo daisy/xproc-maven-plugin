@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXSource;
+
+import com.google.common.collect.Iterators;
 
 import com.xmlcalabash.core.XProcConfiguration;
 import com.xmlcalabash.core.XProcRuntime;
@@ -23,6 +26,9 @@ import com.xmlcalabash.runtime.XPipeline;
 
 import net.sf.saxon.s9api.QName;
 
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.CatalogResolver;
+
 import org.daisy.maven.xproc.api.XProcEngine;
 import org.daisy.maven.xproc.api.XProcExecutionException;
 
@@ -32,6 +38,7 @@ public class Calabash implements XProcEngine {
 	
 	private XProcRuntime runtime;
 	private URIResolver uriResolver;
+	private File catalog = null;
 	
 	protected void setURIResolver(URIResolver uriResolver) {
 		this.uriResolver = uriResolver;
@@ -39,9 +46,27 @@ public class Calabash implements XProcEngine {
 	
 	protected void activate() {
 		runtime = new XProcRuntime(new XProcConfiguration("he", false));
-		runtime.setURIResolver(uriResolver == null ?
-		                       JarURIResolver.newInstance() :
-		                       JarURIResolver.wrap(uriResolver));
+		if (uriResolver == null)
+			uriResolver = simpleURIResolver();
+		updateURIResolver();
+	}
+	
+	private void updateURIResolver() {
+		if (catalog != null && catalog.exists()) {
+			CatalogManager catalogManager = new CatalogManager();
+			catalogManager.setCatalogFiles(catalog.getPath());
+			runtime.setURIResolver(fallingBackURIResolver(jarURIResolver(), uriResolver, new CatalogResolver(catalogManager))); }
+		else
+			runtime.setURIResolver(fallingBackURIResolver(jarURIResolver(), uriResolver));
+	}
+	
+	public void setCatalog(File catalog) {
+		if (this.catalog == null ? catalog != null : !this.catalog.equals(catalog)) {
+			this.catalog = catalog;
+			if (runtime == null)
+				activate();
+			else
+				updateURIResolver(); }
 	}
 	
 	public void run(String pipeline,
@@ -82,41 +107,48 @@ public class Calabash implements XProcEngine {
 		catch (Exception e) {
 			throw new XProcExecutionException("Calabash failed to execute XProc", e); }
 	}
+		
+	private static URIResolver simpleURIResolver() {
+		return new URIResolver() {
+			public Source resolve(String href, String base) throws TransformerException {
+				if (href.startsWith("http:"))
+					return null;
+				try {
+					URI uri;
+					if (base != null)
+						uri = new URI(base).resolve(new URI(href));
+					else
+						uri = new URI(href);
+					return new SAXSource(new InputSource(uri.toASCIIString())); }
+				catch (URISyntaxException e) {
+					throw new TransformerException(e); }
+			}
+		};
+	}
 	
-	private abstract static class JarURIResolver implements URIResolver {
-		
-		public abstract Source delegate(String href, String base) throws TransformerException;
-		
-		public Source resolve(String href, String base) throws TransformerException {
-			try {
-				if (base != null && base.startsWith("jar:file:"))
-					return new SAXSource(new InputSource(new URL(new URL(base), href).toString())); }
-			catch (MalformedURLException e) {}
-			return delegate(href, base);
-		}
-		
-		private static JarURIResolver newInstance() {
-			return new JarURIResolver() {
-				public Source delegate(String href, String base) throws TransformerException {
-					try {
-						URI uri;
-						if (base != null)
-							uri = new URI(base).resolve(new URI(href));
-						else
-							uri = new URI(href);
-						return new SAXSource(new InputSource(uri.toASCIIString())); }
-					catch (URISyntaxException e) {
-						throw new TransformerException(e); }
-				}
-			};
-		}
-		
-		private static JarURIResolver wrap(final URIResolver delegate) {
-			return new JarURIResolver() {
-				public Source delegate(String href, String base) throws TransformerException {
-					return delegate.resolve(href, base);
-				}
-			};
-		}
+	private static URIResolver jarURIResolver() {
+		return new URIResolver() {
+			public Source resolve(String href, String base) throws TransformerException {
+				try {
+					if (base != null && base.startsWith("jar:file:"))
+						return new SAXSource(new InputSource(new URL(new URL(base), href).toString())); }
+				catch (MalformedURLException e) {}
+				return null;
+			}
+		};
+	}
+	
+	private static URIResolver fallingBackURIResolver(final URIResolver... resolvers) {
+		return new URIResolver() {
+			public Source resolve(String href, String base) throws TransformerException {
+				Source source = null;
+				Iterator<URIResolver> iterator = Iterators.forArray(resolvers);
+				while (iterator.hasNext()) {
+					source = iterator.next().resolve(href, base);
+					if (source != null)
+						break; }
+				return source;
+			}
+		};
 	}
 }
