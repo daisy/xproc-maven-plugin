@@ -45,6 +45,8 @@ public class Calabash implements XProcEngine {
 	}
 	
 	protected void activate() {
+		System.setProperty("com.xmlcalabash.config.user", "false");
+		System.setProperty("com.xmlcalabash.config.local", "false");
 		runtime = new XProcRuntime(new XProcConfiguration("he", false));
 		if (uriResolver == null)
 			uriResolver = simpleURIResolver();
