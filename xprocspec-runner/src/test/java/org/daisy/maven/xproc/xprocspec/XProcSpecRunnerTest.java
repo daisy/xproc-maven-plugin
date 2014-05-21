@@ -81,9 +81,7 @@ public class XProcSpecRunnerTest {
 		assertTrue(new File(surefireReportsDir, "TEST-test_identity_broken.xml").exists());
 	}
 	
-	// FIXME: see issue https://github.com/daisy/xprocspec/issues/20
 	@Test
-	@org.junit.Ignore
 	public void testError() {
 		Map<String,File> tests = ImmutableMap.of("test_non_existing", new File(testsDir, "test_non_existing.xprocspec"),
 		                                         "non_existing_test", new File(testsDir, "non_existing_test.xprocspec"));
