@@ -58,9 +58,7 @@ public class XProcSpecRunnerTest {
 		assertTrue(new File(surefireReportsDir, "TEST-test_identity.xml").exists());
 	}
 	
-	// FIXME: bug in xprocspec? assertions of type "xpath" don't work?
 	@Test
-	@org.junit.Ignore
 	public void testFailure() {
 		Map<String,File> tests = ImmutableMap.of("test_identity_broken", new File(testsDir, "test_identity_broken.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -83,7 +81,7 @@ public class XProcSpecRunnerTest {
 		assertTrue(new File(surefireReportsDir, "TEST-test_identity_broken.xml").exists());
 	}
 	
-	// FIXME: bug in surefire report of test_non_existing? run must >= failures + errors + skipped
+	// FIXME: see issue https://github.com/daisy/xprocspec/issues/20
 	@Test
 	@org.junit.Ignore
 	public void testError() {
