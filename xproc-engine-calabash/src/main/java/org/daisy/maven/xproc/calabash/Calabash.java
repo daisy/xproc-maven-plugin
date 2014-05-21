@@ -132,7 +132,7 @@ public class Calabash implements XProcEngine {
 		return new URIResolver() {
 			public Source resolve(String href, String base) throws TransformerException {
 				try {
-					if (base != null && base.startsWith("jar:file:"))
+					if (!href.startsWith("http:") && base != null && base.startsWith("jar:file:"))
 						return new SAXSource(new InputSource(new URL(new URL(base), href).toString())); }
 				catch (MalformedURLException e) {}
 				return null;

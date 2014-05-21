@@ -135,7 +135,6 @@ public class XProcSpecRunnerTest {
 	}
 	
 	@Test
-	@org.junit.Ignore
 	public void testMocking() {
 		Map<String,File> tests = ImmutableMap.of("test_import_foo", new File(testsDir, "test_import_foo.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();

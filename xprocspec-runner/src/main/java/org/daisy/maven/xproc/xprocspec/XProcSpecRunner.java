@@ -66,7 +66,6 @@ public class XProcSpecRunner {
 			activate();
 		engine.setCatalog(catalog);
 		
-		
 		URI xprocspec = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
 		URI xprocspecSummary = asURI(XProcSpecRunner.class.getResource("/xprocspec-extra/xprocspec-summary.xpl"));
 		URL xspecCss = XProcSpecRunner.class.getResource("/xprocspec-extra/xspec.css");
