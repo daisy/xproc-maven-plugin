@@ -120,7 +120,7 @@
                   <thead>
                     <tr>
                       <th style="text-align: right; font-weight: normal;">
-                        passed/pending/failed/total
+                        passed/pending/failed/error/total
                       </th>
                       <th>
                         <xsl:value-of select="concat($passed, '/', $pending, '/', $failed, '/', $error, '/', $total)"/>
