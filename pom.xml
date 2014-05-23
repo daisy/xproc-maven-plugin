@@ -18,21 +18,6 @@
     <module>xproc-maven-plugin</module>
   </modules>
   
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>net.sf.saxon</groupId>
-        <artifactId>Saxon-HE</artifactId>
-        <version>9.4.0.7</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>14.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  
   <build>
     <pluginManagement>
       <plugins>

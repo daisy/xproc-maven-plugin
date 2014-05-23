@@ -40,7 +40,8 @@ public class XProcSpecRunnerTest {
 	
 	@Test
 	public void testSuccess() {
-		Map<String,File> tests = ImmutableMap.of("test_identity", new File(testsDir, "test_identity.xprocspec"));
+		Map<String,File> tests = ImmutableMap.of("test_identity", new File(testsDir, "test_identity.xprocspec"),
+		                                         "test_throw_error", new File(testsDir, "test_throw_error.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
@@ -50,10 +51,12 @@ public class XProcSpecRunnerTest {
 "-------------------------------------------------------"                                + "\n" +
 "Running test_identity"                                                                  + "\n" +
 "Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: ... sec"                + "\n" +
+"Running test_throw_error"                                                               + "\n" +
+"Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: ... sec"                + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
-"Tests run: 3, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
+"Tests run: 4, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
 		assertTrue(new File(reportsDir, "test_identity.html").exists());
 		assertTrue(new File(surefireReportsDir, "TEST-test_identity.xml").exists());
 	}
