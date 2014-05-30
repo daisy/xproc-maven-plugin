@@ -4,10 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.File;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 
+import org.daisy.maven.xproc.api.XProcEngine;
+import org.daisy.maven.xproc.calabash.Calabash;
 import org.daisy.maven.xproc.xprocspec.XProcSpecRunner.Reporter;
 
 import org.hamcrest.BaseMatcher;
@@ -119,7 +122,7 @@ public class XProcSpecRunnerTest {
 	
 	@Test
 	public void testPending() {
-		Map<String,File> tests = ImmutableMap.of("test_with_pending", new File(testsDir, "test_with_pending.xprocspec"));
+		Map<String,File> tests = ImmutableMap.of("test_identity_pending", new File(testsDir, "test_identity_pending.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
@@ -127,19 +130,19 @@ public class XProcSpecRunnerTest {
 "-------------------------------------------------------"                                + "\n" +
 " X P R O C S P E C   T E S T S"                                                         + "\n" +
 "-------------------------------------------------------"                                + "\n" +
-"Running test_with_pending"                                                              + "\n" +
+"Running test_identity_pending"                                                          + "\n" +
 "Tests run: 4, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: ... sec"                + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
 "Tests run: 4, Failures: 0, Errors: 0, Skipped: 2"                                       + "\n"));
-		assertTrue(new File(reportsDir, "test_with_pending.html").exists());
-		assertTrue(new File(surefireReportsDir, "TEST-test_with_pending.xml").exists());
+		assertTrue(new File(reportsDir, "test_identity_pending.html").exists());
+		assertTrue(new File(surefireReportsDir, "TEST-test_identity_pending.xml").exists());
 	}
 	
 	@Test
 	public void testMocking() {
-		Map<String,File> tests = ImmutableMap.of("test_import_foo", new File(testsDir, "test_import_foo.xprocspec"));
+		Map<String,File> tests = ImmutableMap.of("test_foo_catalog", new File(testsDir, "test_foo_catalog.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
@@ -147,16 +150,16 @@ public class XProcSpecRunnerTest {
 "-------------------------------------------------------"                                + "\n" +
 " X P R O C S P E C   T E S T S"                                                         + "\n" +
 "-------------------------------------------------------"                                + "\n" +
-"Running test_import_foo"                                                                + "\n" +
+"Running test_foo_catalog"                                                               + "\n" +
 "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
 "Tests in error:"                                                                        + "\n" +
-"  test_import_foo"                                                                      + "\n" +
+"  test_foo_catalog"                                                                     + "\n" +
 ""                                                                                       + "\n" +
 "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0"                                       + "\n"));
-		File catalog = new File(testsDir, "catalog.xml");
+		File catalog = new File(testsDir, "foo_catalog.xml");
 		stream.reset();
 		setup();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, catalog,
@@ -165,7 +168,47 @@ public class XProcSpecRunnerTest {
 "-------------------------------------------------------"                                + "\n" +
 " X P R O C S P E C   T E S T S"                                                         + "\n" +
 "-------------------------------------------------------"                                + "\n" +
-"Running test_import_foo"                                                                + "\n" +
+"Running test_foo_catalog"                                                               + "\n" +
+"Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: ... sec"                + "\n" +
+""                                                                                       + "\n" +
+"Results :"                                                                              + "\n" +
+""                                                                                       + "\n" +
+"Tests run: 2, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
+	}
+	
+	@Test
+	public void testCustomJavaStep() {
+		Map<String,File> tests = ImmutableMap.of("test_foo_java", new File(testsDir, "test_foo_java.xprocspec"));
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
+		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
+		assertThat(stream.toString(), matchesPattern(
+"-------------------------------------------------------"                                + "\n" +
+" X P R O C S P E C   T E S T S"                                                         + "\n" +
+"-------------------------------------------------------"                                + "\n" +
+"Running test_foo_java"                                                                  + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
+"org.daisy.maven.xproc.api.XProcExecutionException: Calabash failed to execute XProc"    + "\n" +
+"..."                                                                                    + "\n" +
+""                                                                                       + "\n" +
+"Results :"                                                                              + "\n" +
+""                                                                                       + "\n" +
+"Tests in error:"                                                                        + "\n" +
+"  test_foo_java: Calabash failed to execute XProc"                                      + "\n" +
+""                                                                                       + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0"                                       + "\n"));
+		stream.reset();
+		setup();
+		Calabash engine = (Calabash)ServiceLoader.load(XProcEngine.class).iterator().next();
+		engine.setConfiguration(new File(testsDir, "foo_implementation_java.xml"));
+		xprocspecRunner.setXProcEngine(engine);
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
+		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
+		assertThat(stream.toString(), matchesPattern(
+"-------------------------------------------------------"                                + "\n" +
+" X P R O C S P E C   T E S T S"                                                         + "\n" +
+"-------------------------------------------------------"                                + "\n" +
+"Running test_foo_java"                                                                  + "\n" +
 "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: ... sec"                + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +

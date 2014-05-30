@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate">
+<scr:components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
   <scr:component name="Calabash XProc Engine">
     <scr:implementation class="org.daisy.maven.xproc.calabash.Calabash"/>
     <scr:service>

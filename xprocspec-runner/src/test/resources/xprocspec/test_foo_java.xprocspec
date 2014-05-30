@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<x:description xmlns:x="http://www.daisy.org/ns/xprocspec" xmlns:ex="http://example.net/ns" script="../xproc/import_foo.xpl">
-  <x:scenario label="Import foo">
-    <x:call step="ex:import_foo">
+<x:description xmlns:x="http://www.daisy.org/ns/xprocspec" xmlns:ex="http://example.net/ns" script="foo_declaration.xpl">
+  <x:scenario label="Foo">
+    <x:call step="ex:foo">
       <x:input port="source">
         <x:document type="inline">
           <foobar/>

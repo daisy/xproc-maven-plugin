@@ -15,6 +15,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXSource;
 
+import static com.google.common.base.Objects.equal;
 import com.google.common.collect.Iterators;
 
 import com.xmlcalabash.core.XProcConfiguration;
@@ -25,6 +26,7 @@ import com.xmlcalabash.model.RuntimeValue;
 import com.xmlcalabash.runtime.XPipeline;
 import com.xmlcalabash.util.Input;
 
+import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.QName;
 
 import org.apache.xml.resolver.CatalogManager;
@@ -37,39 +39,52 @@ import org.xml.sax.InputSource;
 
 public class Calabash implements XProcEngine {
 	
-	private XProcRuntime runtime;
-	private URIResolver uriResolver;
-	private File catalog = null;
+	private URIResolver nextURIResolver = null;
+	private File nextCatalogFile = null;
+	private File nextConfigFile = null;
 	
 	protected void setURIResolver(URIResolver uriResolver) {
-		this.uriResolver = uriResolver;
+		nextURIResolver = uriResolver;
 	}
 	
-	protected void activate() {
+	public void setCatalog(File catalogFile) {
+		nextCatalogFile = catalogFile;
+	}
+	
+	public void setConfiguration(File configFile) {
+		nextConfigFile = configFile;
+	}
+	
+	private XProcRuntime currentRuntime = null;
+	private URIResolver currentURIResolver = null;
+	private File currentCatalogFile = null;
+	private File currentConfigFile = null;
+	
+	private XProcRuntime runtime() {
 		System.setProperty("com.xmlcalabash.config.user", "false");
 		System.setProperty("com.xmlcalabash.config.local", "false");
-		runtime = new XProcRuntime(new XProcConfiguration("he", false));
-		if (uriResolver == null)
-			uriResolver = simpleURIResolver();
-		updateURIResolver();
-	}
-	
-	private void updateURIResolver() {
-		if (catalog != null && catalog.exists()) {
-			CatalogManager catalogManager = new CatalogManager();
-			catalogManager.setCatalogFiles(catalog.getPath());
-			runtime.setURIResolver(fallingBackURIResolver(jarURIResolver(), uriResolver, new CatalogResolver(catalogManager))); }
-		else
-			runtime.setURIResolver(fallingBackURIResolver(jarURIResolver(), uriResolver));
-	}
-	
-	public void setCatalog(File catalog) {
-		if (this.catalog == null ? catalog != null : !this.catalog.equals(catalog)) {
-			this.catalog = catalog;
-			if (runtime == null)
-				activate();
+		if (currentRuntime == null || !equal(nextConfigFile, currentConfigFile)) {
+			XProcConfiguration config = new XProcConfiguration("he", false);
+			if (nextConfigFile != null && nextConfigFile.exists()) {
+				try {
+					config.parse(config.getProcessor().newDocumentBuilder().build(
+						             new SAXSource(new InputSource(nextConfigFile.toURI().toASCIIString())))); }
+				catch (SaxonApiException e) {
+					throw new RuntimeException(e); }}
+			currentRuntime = new XProcRuntime(config); }
+		if (nextURIResolver == null)
+			nextURIResolver = simpleURIResolver();
+		if (!equal(nextCatalogFile, currentCatalogFile) || nextURIResolver != currentURIResolver) {
+			if (nextCatalogFile != null && nextCatalogFile.exists()) {
+				CatalogManager catalogManager = new CatalogManager();
+				catalogManager.setCatalogFiles(nextCatalogFile.getPath());
+				currentRuntime.setURIResolver(fallingBackURIResolver(jarURIResolver(), nextURIResolver, new CatalogResolver(catalogManager))); }
 			else
-				updateURIResolver(); }
+				currentRuntime.setURIResolver(fallingBackURIResolver(jarURIResolver(), nextURIResolver)); }
+		currentURIResolver = nextURIResolver;
+		currentCatalogFile = nextCatalogFile;
+		currentConfigFile = nextConfigFile;
+		return currentRuntime;
 	}
 	
 	public void run(String pipeline,
@@ -78,8 +93,7 @@ public class Calabash implements XProcEngine {
 	                Map<String,String> options,
 	                Map<String,Map<String,String>> parameters)
 			throws XProcExecutionException {
-		if (runtime == null)
-			activate();
+		XProcRuntime runtime = runtime();
 		try {
 			XPipeline xpipeline = runtime.load(new Input(pipeline));
 			if (inputs != null)

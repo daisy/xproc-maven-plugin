@@ -4,8 +4,15 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.daisy.pipeline.maven</groupId>
-  <artifactId>it-xprocspec-hello-world-calabash</artifactId>
+  <artifactId>it-xprocspec-config-calabash</artifactId>
   <version>0.0-SNAPSHOT</version>
+  <dependencies>
+    <dependency>
+      <groupId>org.daisy.libs</groupId>
+      <artifactId>com.xmlcalabash</artifactId>
+      <version>1.0.16-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
       <plugin>
@@ -30,13 +37,4 @@
       </plugin>
     </plugins>
   </build>
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.14.1</version>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>

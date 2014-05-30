@@ -38,7 +38,7 @@ public class XProcSpecRunner {
 	
 	private XProcEngine engine;
 	
-	protected void setXProcEngine(XProcEngine engine) {
+	public void setXProcEngine(XProcEngine engine) {
 		this.engine = engine;
 	}
 	
