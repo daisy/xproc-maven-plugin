@@ -2,11 +2,18 @@ package org.daisy.maven.xproc.plugin;
 
 import java.io.File;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.LogManager;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
 
 import org.daisy.maven.xproc.xprocspec.XProcSpecRunner;
 import org.daisy.maven.xproc.xprocspec.XProcSpecRunner.Reporter;
+
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * Run an XProcSpec test.
@@ -67,7 +74,21 @@ public class XProcSpecMojo extends AbstractMojo {
 	 */
 	private File tempDir;
 	
+	/**
+	 * @parameter default-value="${project}"
+	 * @required
+	 * @readonly
+	 */
+	private MavenProject project;
+	
 	public void execute() throws MojoFailureException {
+		
+		File logbackXml = new File(new File(project.getBuild().getTestOutputDirectory()), "logback.xml");
+		if (logbackXml.exists())
+			System.setProperty("logback.configurationFile", logbackXml.toURI().toASCIIString());
+		LogManager.getLogManager().reset();
+		SLF4JBridgeHandler.install();
+		Logger.getLogger("").setLevel(Level.FINEST);
 		
 		if (skip || skipTests) {
 			getLog().info("Tests are skipped.");
