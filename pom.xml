@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   
@@ -14,7 +12,7 @@
   
   <groupId>org.daisy.maven</groupId>
   <artifactId>xproc-maven-plugin-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>pom</packaging>
   <name>xproc-maven-plugin-parent</name>
   
@@ -22,7 +20,7 @@
     <url>http://github.com/daisy/xproc-maven-plugin</url>
     <connection>scm:git:git@github.com:daisy/xproc-maven-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:daisy/xproc-maven-plugin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v1.0.0</tag>
   </scm>
   
   <modules>
