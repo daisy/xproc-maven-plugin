@@ -188,13 +188,11 @@ public class XProcSpecRunnerTest {
 "-------------------------------------------------------"                                + "\n" +
 "Running test_foo_java"                                                                  + "\n" +
 "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
-"org.daisy.maven.xproc.api.XProcExecutionException: Calabash failed to execute XProc"    + "\n" +
-"..."                                                                                    + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
 "Tests in error:"                                                                        + "\n" +
-"  test_foo_java: Calabash failed to execute XProc"                                      + "\n" +
+"  test_foo_java"                                                                        + "\n" +
 ""                                                                                       + "\n" +
 "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0"                                       + "\n"));
 		stream.reset();
