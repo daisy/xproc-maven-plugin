@@ -12,7 +12,7 @@
   
   <groupId>org.daisy.maven</groupId>
   <artifactId>xproc-maven-plugin-parent</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>xproc-maven-plugin-parent</name>
   
@@ -20,7 +20,7 @@
     <url>http://github.com/daisy/xproc-maven-plugin</url>
     <connection>scm:git:git@github.com:daisy/xproc-maven-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:daisy/xproc-maven-plugin.git</developerConnection>
-    <tag>v1.0.0</tag>
+    <tag>HEAD</tag>
   </scm>
   
   <modules>
