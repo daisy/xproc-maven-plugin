@@ -2,14 +2,19 @@ package org.daisy.maven.xproc.xprocspec;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import static com.google.common.io.Files.asByteSink;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +38,7 @@ public class XProcSpecRunner {
 	
 	private XProcEngine engine;
 	
-	protected void setXProcEngine(XProcEngine engine) {
+	public void setXProcEngine(XProcEngine engine) {
 		this.engine = engine;
 	}
 	
@@ -50,66 +55,106 @@ public class XProcSpecRunner {
 		}
 	}
 	
-	public TestResult[] run(Map<String,File> tests,
-	                        File reportsDir,
-	                        File surefireReportsDir,
-	                        File tempDir,
-	                        TestLogger logger) {
+	public boolean run(Map<String,File> tests,
+	                   File reportsDir,
+	                   File surefireReportsDir,
+	                   File tempDir,
+	                   File catalog,
+	                   Reporter reporter) {
 		
 		if (engine == null)
 			activate();
+		engine.setCatalog(catalog);
 		
-		if (logger == null)
-			logger = new TestLogger.NULL();
-		
-		URI pipeline = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
+		URI xprocspec = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
+		URI xprocspecSummary = asURI(XProcSpecRunner.class.getResource("/xprocspec-extra/xprocspec-summary.xpl"));
+		URL xspecCss = XProcSpecRunner.class.getResource("/xprocspec-extra/xspec.css");
 		
 		reportsDir.mkdirs();
 		surefireReportsDir.mkdirs();
 		
-		TestResult[] testResults = new TestResult[tests.size()];
-		int i = 0;
+		int totalRun = 0;
+		int totalFailures = 0;
+		int totalErrors = 0;
+		int totalSkipped = 0;
+		
+		long startTime = System.nanoTime();
+		
+		reporter.init();
+		
 		for (String testName : tests.keySet()) {
-			Map<String,List<String>> input = new HashMap<String,List<String>>();
-			Map<String,String> output = new HashMap<String,String>();
-			Map<String,String> options = new HashMap<String,String>();
 			File test = tests.get(testName);
 			File report = new File(reportsDir, testName + ".html");
 			File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
-			input.put("source", Arrays.asList(new String[]{asURI(test).toASCIIString()}));
-			output.put("html", asURI(report).toASCIIString());
-			output.put("junit", asURI(surefireReport).toASCIIString());
-			options.put("temp-dir", asURI(tempDir) + "/tmp/");
-			logger.info("Running: " + testName);
+			Map<String,List<String>> input = ImmutableMap.of("source", Arrays.asList(new String[]{asURI(test).toASCIIString()}));
+			Map<String,String> output = ImmutableMap.of("html", asURI(report).toASCIIString(),
+			                                            "junit", asURI(surefireReport).toASCIIString());
+			Map<String,String> options = ImmutableMap.of("temp-dir", asURI(tempDir) + "/tmp/");
+			reporter.running(testName);
 			try {
-				engine.run(pipeline.toASCIIString(), input, output, options, null);
-				if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@errors) > 0", null, Boolean.class)) {
-					testResults[i] = TestResult.ERROR(testName);
-					logger.info("...ERROR"); }
-				else if ((Boolean)evaluateXPath(surefireReport, "number(/testsuites/@failures) > 0", null, Boolean.class)) {
-					testResults[i] = TestResult.FAILURE(testName);
-					logger.info("...FAILED"); }
+				engine.run(xprocspec.toASCIIString(), input, output, options, null);
+				if (!surefireReport.exists()) {
+					totalRun += 1;
+					totalErrors += 1;
+					reporter.result(1, 0, 1, 0, 0L, null, null); }
 				else {
-					testResults[i] = TestResult.SUCCESS(testName);
-					logger.info("...SUCCESS"); }}
+					Integer run = (Integer)evaluateXPath(surefireReport, "sum(/testsuites/@tests)", null, Integer.class);
+					Integer failures = (Integer)evaluateXPath(surefireReport, "number(/testsuites/@failures)", null, Integer.class);
+					Integer errors = (Integer)evaluateXPath(surefireReport, "number(/testsuites/@errors)", null, Integer.class);
+					Integer skipped = (Integer)evaluateXPath(surefireReport, "sum(/testsuites/*/number(@skipped))", null, Integer.class);
+					Long time = (Long)evaluateXPath(surefireReport, "number(/testsuites/@time)", null, Long.class);
+					totalRun += run;
+					totalFailures += failures;
+					totalErrors += errors;
+					totalSkipped += skipped;
+					reporter.result(run, failures, errors, skipped, time, null, null); }}
 			catch (XProcExecutionException e) {
-				testResults[i] = TestResult.ERROR(testName, e);
-				logger.info("...ERROR");
-				logger.error(e.getMessage());
-				Throwable cause = e.getCause();
-				if (cause != null)
-					logger.debug(Throwables.getStackTraceAsString(cause)); }
-			i++;
+				totalRun += 1;
+				totalErrors += 1;
+				reporter.result(1, 0, 1, 0, 0L, e.getMessage(), Throwables.getStackTraceAsString(e)); }
 		}
 		
-		return testResults;
+		long totalTime = TimeUnit.SECONDS.convert(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+		reporter.finish(totalRun, totalFailures, totalErrors, totalSkipped, totalTime);
+		
+		/* Generate summary */
+		try {
+			StringBuilder testNames = new StringBuilder();
+			StringBuilder surefireReports = new StringBuilder();
+			StringBuilder reports = new StringBuilder();
+			File summary = new File(reportsDir, "index.html");
+			File css = new File(reportsDir, "xspec.css");
+			for (String testName : tests.keySet()) {
+				testNames.append(testName);
+				testNames.append(" ");
+				File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
+				surefireReports.append(asURI(surefireReport).toASCIIString());
+				surefireReports.append(" ");
+				File report = new File(reportsDir, testName + ".html");
+				reports.append(asURI(report).toASCIIString());
+				reports.append(" "); }
+			testNames.deleteCharAt(testNames.length() - 1);
+			surefireReports.deleteCharAt(surefireReports.length() - 1);
+			reports.deleteCharAt(reports.length() - 1);
+			Map<String,String> output = ImmutableMap.of("result", asURI(summary).toASCIIString());
+			Map<String,String> params = ImmutableMap.of("test-names", testNames.toString(),
+			                                            "surefire-reports", surefireReports.toString(),
+			                                            "reports", reports.toString());
+			engine.run(xprocspecSummary.toASCIIString(), null, output, null, ImmutableMap.of("parameters", params));
+			asByteSink(css).writeFrom(xspecCss.openStream()); }
+		catch (XProcExecutionException e) {
+			throw new RuntimeException(e); }
+		catch (IOException e) {
+			throw new RuntimeException(e); }
+		
+		return totalErrors == 0 && totalFailures == 0;
 	}
 	
-	public TestResult[] run(File testsDir,
-	                        File reportsDir,
-	                        File surefireReportsDir,
-	                        File tempDir,
-	                        TestLogger logger) {
+	public boolean run(File testsDir,
+	                   File reportsDir,
+	                   File surefireReportsDir,
+	                   File tempDir,
+	                   Reporter reporter) {
 		
 		Map<String,File> tests = new HashMap<String,File>();
 		for (File file : listXProcSpecFilesRecursively(testsDir))
@@ -118,78 +163,80 @@ public class XProcSpecRunner {
 					.replaceAll("\\.xprocspec$", "")
 					.replaceAll("[\\./\\\\]", "_"),
 				file);
-		return run(tests, reportsDir, surefireReportsDir, tempDir, logger);
+		File catalog = new File(testsDir, "catalog.xml");
+		if (!catalog.exists()) catalog = null;
+		return run(tests, reportsDir, surefireReportsDir, tempDir, catalog, reporter);
 	}
 	
-	public static class TestResult {
-		public static enum TestState {
-			SUCCESS,
-			FAILURE,
-			ERROR,
-			SKIPPED
-		}
-		public final String name;
-		public final TestState state;
-		public final String detail;
-		private TestResult(String name, TestState state) {
-			this(name, state, null);
-		}
-		private TestResult(String name, TestState state, String detail) {
-			this.name = name;
-			this.state = state;
-			this.detail = detail;
-		}
-		private static TestResult SUCCESS(String name) {
-			return new TestResult(name, TestState.SUCCESS);
-		}
-		private static TestResult FAILURE(String name) {
-			return new TestResult(name, TestState.FAILURE);
-		}
-		private static TestResult ERROR(String name) {
-			return new TestResult(name, TestState.ERROR);
-		}
-		private static TestResult ERROR(String name, Throwable cause) {
-			return new TestResult(name, TestState.ERROR, cause.getMessage());
-		}
-		@SuppressWarnings("unused")
-		private static TestResult SKIPPED(String name) {
-			return new TestResult(name, TestState.SKIPPED);
-		}
-		private static int count(TestResult[] results, TestState state) {
-			int c = 0;
-			for (TestResult result : results)
-				if (result.state == state)
-					c++;
-			return c;
-		}
-		public static int getFailures(TestResult[] results) {
-			return count(results, TestState.FAILURE);
-		}
-		public static int getErrors(TestResult[] results) {
-			return count(results, TestState.ERROR);
-		}
-	}
-	
-	public static interface TestLogger {
-		public void info(String message);
-		public void warn(String message);
-		public void error(String message);
-		public void debug(String message);
-		public static class NULL implements TestLogger {
-			public void info(String message) {}
-			public void warn(String message) {}
-			public void error(String message) {}
-			public void debug(String message) {}
-		}
-		public static class PrintStreamLogger implements TestLogger {
-			private final PrintStream stream;
-			public PrintStreamLogger(PrintStream stream) {
+	public static interface Reporter {
+		
+		public void init();
+		public void running(String name) ;
+		public void result(int run, int failures, int errors, int skipped, long time, String shortDesc, String longDesc);
+		public void finish(int run, int failures, int errors, int skipped, long time);
+		
+		public static class DefaultReporter implements Reporter {
+			
+			private PrintStream stream;
+			private String currentTest;
+			private List<String> failedTests = new ArrayList<String>();
+			private List<String> testsInError = new ArrayList<String>();
+			
+			public DefaultReporter() {
+				this(System.out);
+			}
+			
+			public DefaultReporter(PrintStream stream) {
 				this.stream = stream;
 			}
-			public void info(String message) { stream.println("[INFO] " + message); }
-			public void warn(String message) { stream.println("[WARNING] " + message); }
-			public void error(String message) { stream.println("[ERROR] " + message); }
-			public void debug(String message) { stream.println("[DEBUG] " + message); }
+			
+			private void println(String format, Object... args) {
+				stream.format(format + "\n", args);
+			}
+			
+			public void init() {
+				println("-------------------------------------------------------");
+				println(" X P R O C S P E C   T E S T S");
+				println("-------------------------------------------------------");
+			}
+			
+			public void running(String name) {
+				println("Running %s", name);
+				currentTest = name;
+			}
+			
+			public void result(int run, int failures, int errors, int skipped, long time, String shortDesc, String longDesc) {
+				println("Tests run: %d, Failures: %d, Errors: %d, Skipped: %d, Time elapsed: %s sec%s",
+				        run, failures, errors, skipped, (new DecimalFormat("0.#")).format(time),
+				        (failures > 0 || errors > 0) ? " <<< FAILURE!" : "");
+				List<String> summary = errors > 0 ? testsInError : failures > 0 ? failedTests : null;
+				if (summary != null) {
+					if (shortDesc != null)
+						summary.add(currentTest + ": " + shortDesc);
+					else
+						summary.add(currentTest); }
+				if (longDesc != null)
+					println(longDesc);
+			}
+			
+			public void finish(int run, int failures, int errors, int skipped, long time) {
+				if (run == 0)
+					println("There are no tests to run.");
+				println("");
+				println("Results :");
+				println("");
+				if (failedTests.size() > 0) {
+					println("Failed tests:");
+					for (String test : failedTests)
+						println("  " + test);
+					println(""); }
+				if (testsInError.size() > 0) {
+					println("Tests in error:");
+					for (String test : testsInError)
+						println("  " + test);
+					println(""); }
+				println("Tests run: %d, Failures: %d, Errors: %d, Skipped: %d", run, failures, errors, skipped);
+			}
 		}
 	}
 	
@@ -253,6 +300,10 @@ public class XProcSpecRunner {
 				return expr.evaluate(source, XPathConstants.BOOLEAN);
 			if (type.equals(String.class))
 				return expr.evaluate(source, XPathConstants.STRING);
+			if (type.equals(Integer.class))
+				return ((Double)expr.evaluate(source, XPathConstants.NUMBER)).intValue();
+			if (type.equals(Long.class))
+				return ((Double)expr.evaluate(source, XPathConstants.NUMBER)).longValue();
 			else
 				throw new RuntimeException("Cannot evaluate to a " + type.getName()); }
 		catch (Exception e) {

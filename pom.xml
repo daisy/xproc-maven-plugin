@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>org.daisy</groupId>
+    <artifactId>daisy</artifactId>
+    <version>3</version>
+    <relativePath />
+  </parent>
+  
   <groupId>org.daisy.maven</groupId>
   <artifactId>xproc-maven-plugin-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>xproc-maven-plugin-parent</name>
+  
+  <scm>
+    <url>http://github.com/daisy/xproc-maven-plugin</url>
+    <connection>scm:git:git@github.com:daisy/xproc-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:daisy/xproc-maven-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
   
   <modules>
     <module>xproc-engine-api</module>
@@ -17,16 +30,6 @@
     <module>xprocspec-runner</module>
     <module>xproc-maven-plugin</module>
   </modules>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>net.sf.saxon</groupId>
-        <artifactId>Saxon-HE</artifactId>
-        <version>9.4.0.7</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   
   <build>
     <pluginManagement>
@@ -42,7 +45,6 @@
         <plugin>
           <groupId>org.apache.felix</groupId>
           <artifactId>maven-bundle-plugin</artifactId>
-          <version>2.4.0</version>
           <extensions>true</extensions>
           <configuration>
             <archive>
@@ -53,37 +55,5 @@
       </plugins>
     </pluginManagement>
   </build>
-  
-  <repositories>
-    <repository>
-      <id>central</id>
-      <name>Maven Central</name>
-      <url>http://repo.maven.apache.org/maven2/</url>
-    </repository>
-    <repository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>oss.sonatype.org github Release Repository Snapshot Repository</name>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-    </repository>
-  </repositories>
-  
-  <distributionManagement>
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <name>oss.sonatype.org Staging Repository</name>
-      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>oss.sonatype.org github Release Repository Snapshot Repository</name>
-      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
 
 </project>
