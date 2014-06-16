@@ -10,7 +10,7 @@
     <dependency>
       <groupId>org.daisy.libs</groupId>
       <artifactId>com.xmlcalabash</artifactId>
-      <version>1.0.16-SNAPSHOT</version>
+      <version>1.0.18</version>
     </dependency>
   </dependencies>
   <build>
