@@ -37,12 +37,12 @@
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xproc-engine-api</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xprocspec-runner</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -58,7 +58,6 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.0.11</version>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
   <build>
@@ -73,7 +72,7 @@
           <postBuildHookScript>verify</postBuildHookScript>
           <properties>
             <xproc-maven-plugin.version>${project.version}</xproc-maven-plugin.version>
-            <xproc-engine-calabash.version>1.0.0-SNAPSHOT</xproc-engine-calabash.version>
+            <xproc-engine-calabash.version>1.0.1-SNAPSHOT</xproc-engine-calabash.version>
           </properties>
           <goals>
             <goal>surefire-report:report</goal>

@@ -2,9 +2,6 @@ package org.daisy.maven.xproc.plugin;
 
 import java.io.File;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.LogManager;
 import java.util.ServiceLoader;
 
 import org.apache.maven.artifact.Artifact;
@@ -19,7 +16,8 @@ import org.daisy.maven.xproc.xprocspec.XProcSpecRunner;
 import org.daisy.maven.xproc.xprocspec.XProcSpecRunner.Reporter;
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
+import org.slf4j.LoggerFactory;
+		
 /**
  * Run an XProcSpec test.
  *
@@ -89,16 +87,20 @@ public class XProcSpecMojo extends AbstractMojo {
 	
 	public void execute() throws MojoFailureException {
 		
-		File logbackXml = new File(new File(project.getBuild().getTestOutputDirectory()), "logback.xml");
-		if (logbackXml.exists())
-			System.setProperty("logback.configurationFile", logbackXml.toURI().toASCIIString());
-		LogManager.getLogManager().reset();
-		SLF4JBridgeHandler.install();
-		Logger.getLogger("").setLevel(Level.FINEST);
-		
 		if (skip || skipTests) {
 			getLog().info("Tests are skipped.");
 			return; }
+		
+		File logbackXml = new File(new File(project.getBuild().getTestOutputDirectory()), "logback.xml");
+		if (logbackXml.exists())
+			System.setProperty("logback.configurationFile", logbackXml.toURI().toASCIIString());
+		else {
+			ch.qos.logback.classic.Logger root= (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(
+				ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+			root.setLevel(ch.qos.logback.classic.Level.WARN); }
+		java.util.logging.LogManager.getLogManager().reset();
+		SLF4JBridgeHandler.install();
+		java.util.logging.Logger.getLogger("").setLevel(java.util.logging.Level.FINEST);
 		
 		XProcSpecRunner runner = new XProcSpecRunner();
 		
