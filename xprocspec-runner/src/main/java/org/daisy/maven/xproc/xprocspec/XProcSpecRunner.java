@@ -1,5 +1,6 @@
 package org.daisy.maven.xproc.xprocspec;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -119,27 +120,23 @@ public class XProcSpecRunner {
 		
 		/* Generate summary */
 		try {
-			StringBuilder testNames = new StringBuilder();
-			StringBuilder surefireReports = new StringBuilder();
-			StringBuilder reports = new StringBuilder();
+			String[] testNames = new String[tests.size()];
+			String[] surefireReports = new String[tests.size()];
+			String[] reports = new String[tests.size()];
 			File summary = new File(reportsDir, "index.html");
 			File css = new File(reportsDir, "xspec.css");
+			Joiner joiner = Joiner.on(" ");
+			int i = 0;
 			for (String testName : tests.keySet()) {
-				testNames.append(testName);
-				testNames.append(" ");
+				testNames[i] = testName;
 				File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
-				surefireReports.append(asURI(surefireReport).toASCIIString());
-				surefireReports.append(" ");
+				surefireReports[i] = asURI(surefireReport).toASCIIString();
 				File report = new File(reportsDir, testName + ".html");
-				reports.append(asURI(report).toASCIIString());
-				reports.append(" "); }
-			testNames.deleteCharAt(testNames.length() - 1);
-			surefireReports.deleteCharAt(surefireReports.length() - 1);
-			reports.deleteCharAt(reports.length() - 1);
+				reports[i++] = asURI(report).toASCIIString(); }
 			Map<String,String> output = ImmutableMap.of("result", asURI(summary).toASCIIString());
-			Map<String,String> params = ImmutableMap.of("test-names", testNames.toString(),
-			                                            "surefire-reports", surefireReports.toString(),
-			                                            "reports", reports.toString());
+			Map<String,String> params = ImmutableMap.of("test-names", joiner.join(testNames),
+			                                            "surefire-reports", joiner.join(surefireReports),
+			                                            "reports", joiner.join(reports));
 			engine.run(xprocspecSummary.toASCIIString(), null, output, null, ImmutableMap.of("parameters", params));
 			asByteSink(css).writeFrom(xspecCss.openStream()); }
 		catch (XProcExecutionException e) {

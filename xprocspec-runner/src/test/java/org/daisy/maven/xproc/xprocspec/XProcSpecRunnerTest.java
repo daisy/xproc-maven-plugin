@@ -214,6 +214,25 @@ public class XProcSpecRunnerTest {
 "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
 	}
 	
+	
+	@Test
+	public void testNothing() {
+		Map<String,File> tests = ImmutableMap.of();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
+		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
+		assertThat(stream.toString(), matchesPattern(
+"-------------------------------------------------------"                                + "\n" +
+" X P R O C S P E C   T E S T S"                                                         + "\n" +
+"-------------------------------------------------------"                                + "\n" +
+"There are no tests to run."                                                             + "\n" +
+""                                                                                       + "\n" +
+"Results :"                                                                              + "\n" +
+""                                                                                       + "\n" +
+"Tests run: 0, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
+		assertTrue(new File(reportsDir, "index.html").exists());
+	}
+	
 	public static class PatternMatcher extends BaseMatcher<String> {
 		private final String pattern;
 		private final String regex;
