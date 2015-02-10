@@ -243,11 +243,12 @@ public class XProcSpecRunner {
 	 */
 	private static Collection<File> listXProcSpecFilesRecursively(File directory) {
 		ImmutableList.Builder<File> builder = new ImmutableList.Builder<File>();
-		for (File file : directory.listFiles()) {
-			if (file.isDirectory())
-				builder.addAll(listXProcSpecFilesRecursively(file));
-			else if (file.getName().endsWith(".xprocspec"))
-				builder.add(file); }
+		if (directory.isDirectory())
+			for (File file : directory.listFiles()) {
+				if (file.isDirectory())
+					builder.addAll(listXProcSpecFilesRecursively(file));
+				else if (file.getName().endsWith(".xprocspec"))
+					builder.add(file); }
 		return builder.build();
 	}
 	
