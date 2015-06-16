@@ -33,16 +33,34 @@ import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.daisy.maven.xproc.api.XProcExecutionException;
 import org.daisy.maven.xproc.api.XProcEngine;
 
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+
 import org.xml.sax.InputSource;
 
+@Component(
+	name = "org.daisy.maven.xproc.xprocspec.XProcSpecRunner",
+	service = { XProcSpecRunner.class }
+)
 public class XProcSpecRunner {
 	
 	private XProcEngine engine;
 	
+	@Reference(
+		name = "XProcEngine",
+		unbind = "-",
+		service = XProcEngine.class,
+		cardinality = ReferenceCardinality.MANDATORY,
+		policy = ReferencePolicy.STATIC
+	)
 	public void setXProcEngine(XProcEngine engine) {
 		this.engine = engine;
 	}
 	
+	@Activate
 	protected void activate() {
 		if (engine == null) {
 			

@@ -37,12 +37,28 @@ import org.daisy.maven.xproc.api.XProcExecutionException;
 
 import org.xml.sax.InputSource;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+
+@Component(
+	name = "org.daisy.maven.xproc.calabash.Calabash",
+	service = { XProcEngine.class }
+)
 public class Calabash implements XProcEngine {
 	
 	private URIResolver nextURIResolver = null;
 	private File nextCatalogFile = null;
 	private File nextConfigFile = null;
 	
+	@Reference(
+		name = "URIResolver",
+		unbind = "-",
+		service = URIResolver.class,
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policy = ReferencePolicy.STATIC
+	)
 	protected void setURIResolver(URIResolver uriResolver) {
 		nextURIResolver = uriResolver;
 	}
