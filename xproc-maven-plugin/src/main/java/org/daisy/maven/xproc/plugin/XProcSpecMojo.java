@@ -95,9 +95,11 @@ public class XProcSpecMojo extends AbstractMojo {
 		if (logbackXml.exists())
 			System.setProperty("logback.configurationFile", logbackXml.toURI().toASCIIString());
 		else {
-			ch.qos.logback.classic.Logger root= (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(
-				ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-			root.setLevel(ch.qos.logback.classic.Level.WARN); }
+			try {
+				ch.qos.logback.classic.Logger root= (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(
+					ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+				root.setLevel(ch.qos.logback.classic.Level.WARN); }
+			catch (ClassCastException e) {}}
 		java.util.logging.LogManager.getLogManager().reset();
 		SLF4JBridgeHandler.install();
 		java.util.logging.Logger.getLogger("").setLevel(java.util.logging.Level.FINEST);
