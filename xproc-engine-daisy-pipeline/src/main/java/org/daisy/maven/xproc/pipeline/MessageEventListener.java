@@ -29,24 +29,23 @@ public class MessageEventListener {
 	
 	@Subscribe
 	public synchronized void handleMessage(Message message) {
-		String m = message.getText().replaceAll("^\\[[Pp][Rr][Oo][Gg][Rr][Ee][Ss][Ss][^\\]]*\\] *", "");
-		if (!m.isEmpty())
-			switch (message.getLevel()) {
-			case TRACE:
-				logger.trace(m);
-				break;
-			case DEBUG:
-				logger.debug(m);
-				break;
-			case INFO:
-				logger.info(m);
-				break;
-			case WARNING:
-				logger.warn(m);
-				break;
-			case ERROR:
-				logger.error(m);
-				break; }
+		String m = message.getText();
+		switch (message.getLevel()) {
+		case TRACE:
+			logger.trace(m);
+			break;
+		case DEBUG:
+			logger.debug(m);
+			break;
+		case INFO:
+			logger.info(m);
+			break;
+		case WARNING:
+			logger.warn(m);
+			break;
+		case ERROR:
+			logger.error(m);
+			break; }
 	}
 	
 	private static final Logger logger = LoggerFactory.getLogger(MessageEventListener.class);
