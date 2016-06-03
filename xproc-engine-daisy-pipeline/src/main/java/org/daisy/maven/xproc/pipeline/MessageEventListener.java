@@ -26,6 +26,8 @@ public class MessageEventListener {
 	
 	@Subscribe
 	public synchronized void handleMessage(Message message) {
-		System.out.printf("[%s] %s\n", message.getLevel(), message.getText());
+		String text = message.getText().replaceAll("^\\[[Pp][Rr][Oo][Gg][Rr][Ee][Ss][Ss][^\\]]*\\] *", "");
+		if (!text.isEmpty())
+			System.out.printf("[%s] %s\n", message.getLevel(), text);
 	}
 }
