@@ -15,9 +15,14 @@ import org.daisy.pipeline.client.models.Message;
 public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEvent> {
 	
 	private boolean skipIfOnlyProgress = true;
+	private int maxDepth = -1;
 	
 	public void setSkipIfOnlyProgress(boolean skip) {
 		skipIfOnlyProgress = skip;
+	}
+	
+	public void setMaxDepth(int max) {
+		maxDepth = max;
 	}
 	
 	@Override
@@ -47,6 +52,9 @@ public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEve
 		Message m = addMessageFromLogbackMessage(event);
 		if (skipIfOnlyProgress) {
 			if (m.getText().isEmpty())
+				return; }
+		if (maxDepth >= 0) {
+			if (m.depth > maxDepth)
 				return; }
 		super.doEncode(event);
 	}
