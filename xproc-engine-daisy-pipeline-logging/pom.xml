@@ -21,6 +21,14 @@
       <version>1.0.11</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.daisy.pipeline</groupId>
+      <artifactId>clientlib-java</artifactId>
+      <!--
+          depends on branch "jobmessages-class"
+      -->
+      <version>4.6.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
   
   <build>

@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
+
+import org.daisy.pipeline.client.models.Message;
 
 public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEvent> {
 	
@@ -44,33 +43,27 @@ public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEve
 	@Override
 	public void doEncode(ILoggingEvent event) throws IOException {
 		if (skipIfOnlyProgress) {
-			Matcher m = MESSAGE.matcher(event.getFormattedMessage());
-			m.matches();
-			String msg = m.group("msg");
-			if (msg == null)
+			Message m = new Message();
+			m.text = event.getFormattedMessage();
+			if (m.getText().isEmpty())
 				return; }
 		super.doEncode(event);
 	}
 	
 	public static class MessageConverter extends ClassicConverter {
 		public String convert(ILoggingEvent event) {
-			Matcher m = MESSAGE.matcher(event.getFormattedMessage());
-			m.matches();
-			String msg = m.group("msg");
-			return msg == null ? "" : msg;
+			Message m = new Message();
+			m.text = event.getFormattedMessage();
+			return m.getText();
 		}
 	}
 	
 	public static class ProgressConverter extends ClassicConverter {
 		public String convert(ILoggingEvent event) {
-			Matcher m = MESSAGE.matcher(event.getFormattedMessage());
-			m.matches();
-			String progress = m.group("progress");
-			return progress == null ? "" : progress;
+			Message m = new Message();
+			m.text = event.getFormattedMessage();
+			return m.getProgressInfo();
 		}
 	}
-	
-	private static final Pattern MESSAGE
-		= Pattern.compile("^(?<progress>\\[[Pp][Rr][Oo][Gg][Rr][Ee][Ss][Ss][^\\]]*\\])? *(?<msg>.+)?$");
 	
 }
