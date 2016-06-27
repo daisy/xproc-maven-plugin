@@ -22,14 +22,14 @@ import org.daisy.pipeline.client.models.Message;
 
 public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEvent> {
 	
-	private boolean skipIfOnlyProgress = true;
+	private boolean includeProgress = false;
 	private int maxDepth = -1;
 	private String filePattern = null;
 	private String linePattern = null;
 	private String columnPattern = null;
 	
-	public void setSkipIfOnlyProgress(boolean skip) {
-		skipIfOnlyProgress = skip;
+	public void setIncludeProgress(boolean include) {
+		includeProgress = include;
 	}
 	
 	public void setMaxDepth(int max) {
@@ -77,7 +77,9 @@ public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEve
 		patternLayout.setPostCompileProcessor(new PostCompileProcessor<ILoggingEvent>() {
 			public void process(Converter<ILoggingEvent> head) {
 				while (head != null) {
-					if (head instanceof FileConverter)
+					if (head instanceof MessageConverter)
+						((MessageConverter)head).setIncludeProgress(includeProgress);
+					else if (head instanceof FileConverter)
 						((FileConverter)head).setPatterns(filePatterns);
 					else if (head instanceof LineConverter)
 						((LineConverter)head).setPatterns(linePatterns);
@@ -94,7 +96,7 @@ public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEve
 	@Override
 	public void doEncode(ILoggingEvent event) throws IOException {
 		Message m = addMessageFromLogbackMessage(event);
-		if (skipIfOnlyProgress) {
+		if (!includeProgress) {
 			if (m.getText().isEmpty())
 				return; }
 		if (maxDepth >= 0) {
@@ -104,8 +106,18 @@ public class ProgressMessageEncoder extends PatternLayoutEncoderBase<ILoggingEve
 	}
 	
 	public static class MessageConverter extends ClassicConverter {
+		
+		private boolean includeProgress = false;
+		
+		public void setIncludeProgress(boolean include) {
+			includeProgress = include;
+		}
+		
 		public String convert(ILoggingEvent event) {
-			return currentMessage().getText();
+			if (includeProgress)
+				return currentMessage().text;
+			else
+				return currentMessage().getText();
 		}
 	}
 	
