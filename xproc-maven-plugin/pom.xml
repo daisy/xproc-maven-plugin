@@ -16,6 +16,10 @@
   <packaging>maven-plugin</packaging>
   <name>xproc-maven-plugin</name>
   
+  <properties>
+    <it.xproc-engine-calabash.version>1.0.1-SNAPSHOT</it.xproc-engine-calabash.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -38,7 +42,7 @@
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xproc-engine-api</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.daisy.maven</groupId>
@@ -60,6 +64,22 @@
       <artifactId>logback-classic</artifactId>
       <version>1.0.11</version>
     </dependency>
+    <dependency>
+      <groupId>org.daisy.maven</groupId>
+      <artifactId>xproc-engine-calabash</artifactId>
+      <version>${it.xproc-engine-calabash.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.daisy.libs</groupId>
+      <artifactId>com.xmlcalabash</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.daisy.libs</groupId>
+      <artifactId>saxon-he</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -73,7 +93,7 @@
           <postBuildHookScript>verify</postBuildHookScript>
           <properties>
             <xproc-maven-plugin.version>${project.version}</xproc-maven-plugin.version>
-            <xproc-engine-calabash.version>1.0.1-SNAPSHOT</xproc-engine-calabash.version>
+            <xproc-engine-calabash.version>${it.xproc-engine-calabash.version}</xproc-engine-calabash.version>
           </properties>
           <goals>
             <goal>surefire-report:report</goal>
