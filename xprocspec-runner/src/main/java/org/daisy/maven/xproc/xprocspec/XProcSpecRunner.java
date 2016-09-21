@@ -38,7 +38,6 @@ import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.daisy.maven.xproc.api.XProcExecutionException;
 import org.daisy.maven.xproc.api.XProcEngine;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -63,20 +62,6 @@ public class XProcSpecRunner {
 	)
 	public void setXProcEngine(XProcEngine engine) {
 		this.engine = engine;
-	}
-	
-	@Activate
-	protected void activate() {
-		if (engine == null) {
-			
-			// We are not in an OSGi environment, try with ServiceLoader
-			ServiceLoader<XProcEngine> xprocEngines = ServiceLoader.load(XProcEngine.class);
-			try {
-				engine = xprocEngines.iterator().next();
-			} catch (NoSuchElementException e) {
-				throw new RuntimeException("Could not find any XProc engines on the classpath.");
-			}
-		}
 	}
 	
 	private static final Map<String,String> XPROCSPEC_NS = new HashMap<String,String>(); {
@@ -112,11 +97,11 @@ public class XProcSpecRunner {
 	                   File surefireReportsDir,
 	                   File tempDir,
 	                   File catalog,
+	                   File config,
 	                   Reporter reporter) {
 		
-		if (engine == null)
-			activate();
 		engine.setCatalog(catalog);
+		engine.setConfiguration(config);
 		
 		// register Java implementation of px:message
 		// FIXME: make a generic step that can be used by all XProc engines
@@ -135,8 +120,8 @@ public class XProcSpecRunner {
 			}
 		} else if (engine.getClass().getName().equals("org.daisy.maven.xproc.pipeline.DaisyPipeline2")) {
 			
-			// assumes we are running inside OSGi
-			// org.daisy.maven.xproc.xprocspec.logging.pipeline.impl.MessageStepProvider registered through declarative services
+			// org.daisy.maven.xproc.xprocspec.logging.pipeline.impl.MessageStepProvider registered
+			// through declarative services or SPI
 		}
 		
 		URI xprocspec = asURI(XProcSpecRunner.class.getResource("/content/xml/xproc/xprocspec.xpl"));
@@ -243,10 +228,20 @@ public class XProcSpecRunner {
 		return totalErrors == 0 && totalFailures == 0;
 	}
 	
+	public boolean run(Map<String,File> tests,
+	                   File reportsDir,
+	                   File surefireReportsDir,
+	                   File tempDir,
+	                   File catalog,
+	                   Reporter reporter) {
+		return run(tests, reportsDir, surefireReportsDir, tempDir, catalog, null, reporter);
+	}
+	
 	public boolean run(File testsDir,
 	                   File reportsDir,
 	                   File surefireReportsDir,
 	                   File tempDir,
+	                   File configFile,
 	                   Reporter reporter) {
 		
 		Map<String,File> tests = new HashMap<String,File>();
@@ -258,7 +253,15 @@ public class XProcSpecRunner {
 				file);
 		File catalog = new File(testsDir, "catalog.xml");
 		if (!catalog.exists()) catalog = null;
-		return run(tests, reportsDir, surefireReportsDir, tempDir, catalog, reporter);
+		return run(tests, reportsDir, surefireReportsDir, tempDir, catalog, configFile, reporter);
+	}
+	
+	public boolean run(File testsDir,
+	                   File reportsDir,
+	                   File surefireReportsDir,
+	                   File tempDir,
+	                   Reporter reporter) {
+		return run(testsDir, reportsDir, surefireReportsDir, tempDir, null, reporter);
 	}
 	
 	public static interface Reporter {

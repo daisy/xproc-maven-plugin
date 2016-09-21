@@ -25,7 +25,6 @@ import org.daisy.common.xproc.XProcResult;
 
 import org.daisy.maven.xproc.api.XProcExecutionException;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -50,12 +49,14 @@ public class DaisyPipeline2 implements org.daisy.maven.xproc.api.XProcEngine {
 		this.engine = engine;
 	}
 	
-	@Activate
-	protected void activate() {}
-	
 	public void setCatalog(File catalog) {
 		if (catalog != null)
 			throw new UnsupportedOperationException("Setting catalog file not supported.");
+	}
+	
+	public void setConfiguration(File config) {
+		if (config != null)
+			throw new UnsupportedOperationException("Can not be configured with a file.");
 	}
 	
 	public void run(String pipeline,
