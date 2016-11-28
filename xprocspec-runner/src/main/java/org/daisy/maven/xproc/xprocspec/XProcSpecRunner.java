@@ -90,9 +90,16 @@ public class XProcSpecRunner {
 	public boolean hasFocus(Collection<File> tests) {
 		for (File test : tests)
 			if (test.exists())
-				if ((Boolean)evaluateXPath(test, "exists(//x:scenario[@focus])", XPROCSPEC_NS, Boolean.class))
+				if (fileHasFocus(test))
 					return true;
 		return false;
+	}
+	
+	private boolean fileHasFocus(File test) {
+		return (Boolean)evaluateXPath(test,
+		                              "exists(//x:scenario[@focus]) or exists(/x:description[@focus])",
+		                              XPROCSPEC_NS,
+		                              Boolean.class);
 	}
 	
 	public boolean run(Map<String,File> tests,
@@ -143,7 +150,7 @@ public class XProcSpecRunner {
 			for (String testName : tests.keySet()) {
 				File test = tests.get(testName);
 				if (test.exists())
-					if ((Boolean)evaluateXPath(test, "exists(//x:scenario[@focus])", XPROCSPEC_NS, Boolean.class))
+					if (fileHasFocus(test))
 						focusTests.add(testName); }}
 		Set<String> skipTests = new HashSet<String>(); {
 			if (!focusTests.isEmpty())
