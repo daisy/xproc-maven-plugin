@@ -97,9 +97,14 @@ public class XProcSpecRunner {
 	
 	private boolean fileHasFocus(File test) {
 		return (Boolean)evaluateXPath(test,
-		                              "exists(//x:scenario[@focus]) or exists(/x:description[@focus])",
+		                              "exists(//x:scenario[@focus and not(ancestor-or-self::*[@pending])]) or " +
+		                              "exists(/x:description[not(@pending) and @focus])",
 		                              XPROCSPEC_NS,
 		                              Boolean.class);
+	}
+	
+	private boolean fileIsPending(File test) {
+		return (Boolean)evaluateXPath(test, "exists(/x:description[@pending])", XPROCSPEC_NS, Boolean.class);
 	}
 	
 	public boolean run(Map<String,File> tests,
@@ -153,10 +158,11 @@ public class XProcSpecRunner {
 					if (fileHasFocus(test))
 						focusTests.add(testName); }}
 		Set<String> skipTests = new HashSet<String>(); {
-			if (!focusTests.isEmpty())
-				for (String testName : tests.keySet())
-					if (!focusTests.contains(testName))
-						skipTests.add(testName); }
+			for (String testName : tests.keySet()) {
+				File test = tests.get(testName);
+				if ((!focusTests.isEmpty() && !focusTests.contains(testName))
+				    || (test.exists() && fileIsPending(test)))
+					skipTests.add(testName); }}
 		
 		long startTime = System.nanoTime();
 		
@@ -204,23 +210,27 @@ public class XProcSpecRunner {
 		/* Generate summary */
 		try {
 			String[] testNames = new String[tests.size() - skipTests.size()];
+			String[] skipTestNames = new String[skipTests.size()];
 			String[] surefireReports = new String[tests.size() - skipTests.size()];
 			String[] reports = new String[tests.size() - skipTests.size()];
 			File summary = new File(reportsDir, "index.html");
 			File css = new File(reportsDir, "xspec.css");
 			Joiner joiner = Joiner.on(" ");
 			int i = 0;
+			int j = 0;
 			for (String testName : tests.keySet()) {
 				if (skipTests.contains(testName))
-					continue;
-				testNames[i] = testName;
-				File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
-				surefireReports[i] = asURI(surefireReport).toASCIIString();
-				File report = new File(reportsDir, testName + ".html");
-				reports[i] = asURI(report).toASCIIString();
-				i++; }
+					skipTestNames[j++] = testName;
+				else {
+					testNames[i] = testName;
+					File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
+					surefireReports[i] = asURI(surefireReport).toASCIIString();
+					File report = new File(reportsDir, testName + ".html");
+					reports[i] = asURI(report).toASCIIString();
+					i++; }}
 			Map<String,String> output = ImmutableMap.of("result", asURI(summary).toASCIIString());
 			Map<String,String> params = ImmutableMap.of("test-names", joiner.join(testNames),
+			                                            "skip-test-names", joiner.join(skipTestNames),
 			                                            "surefire-reports", joiner.join(surefireReports),
 			                                            "reports", joiner.join(reports));
 			engine.run(xprocspecSummary.toASCIIString(), null, output, null, ImmutableMap.of("parameters", params));
