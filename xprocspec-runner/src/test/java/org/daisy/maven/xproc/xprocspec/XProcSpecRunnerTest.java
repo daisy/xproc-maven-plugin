@@ -20,6 +20,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.junit.Test;
 
 public class XProcSpecRunnerTest {
@@ -31,15 +33,29 @@ public class XProcSpecRunnerTest {
 	private File surefireReportsDir;
 	private File tempDir;
 	
+	@Rule
+	public TestWatcher deleteTempDirsWhenTestSucceeded = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, org.junit.runner.Description d) {
+			System.out.println(d.getMethodName() + " failed");
+			System.out.println("-> reportsDir was: " + reportsDir);
+			System.out.println("-> surefireReportsDir was:" + surefireReportsDir);
+			System.out.println("-> tempDir was: " + tempDir);
+		}
+		@Override
+		protected void succeeded(org.junit.runner.Description d) {
+			reportsDir.deleteOnExit();
+			surefireReportsDir.deleteOnExit();
+			tempDir.deleteOnExit();
+		}
+	};
+	
 	@Before
 	public void setup() {
 		xprocspecRunner = new XProcSpecRunner();
 		reportsDir = Files.createTempDir();
-		reportsDir.deleteOnExit();
 		surefireReportsDir = Files.createTempDir();
-		surefireReportsDir.deleteOnExit();
 		tempDir = Files.createTempDir();
-		tempDir.deleteOnExit();
 		System.setProperty("logback.configurationFile", logbackXml.toURI().toASCIIString());
 	}
 	
@@ -251,6 +267,11 @@ public class XProcSpecRunnerTest {
 		public void describeTo(Description description) {
 			description.appendText("matches pattern\n");
 			description.appendText(pattern);
+		}
+		@Override
+		public void describeMismatch(Object item, Description description) {
+			description.appendText("was\n");
+			description.appendText(item.toString());
 		}
 	}
 	
