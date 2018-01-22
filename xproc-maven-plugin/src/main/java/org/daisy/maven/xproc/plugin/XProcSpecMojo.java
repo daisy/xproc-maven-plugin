@@ -151,7 +151,9 @@ public class XProcSpecMojo extends AbstractMojo {
 				                tempDir,
 				                calabashXml,
 				                reporter))
-					throw new MojoFailureException("There are test failures.");
+					throw new MojoFailureException("There are test failures.\n"
+					                               + "Please refer to " + reportsDirectory.getPath()
+					                               + " for the individual test results.");
 			} finally {
 				Thread.currentThread().setContextClassLoader(restoreClassLoader);
 			}

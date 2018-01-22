@@ -1,11 +1,5 @@
 package org.daisy.maven.xproc.xprocspec;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableMap;
-import static com.google.common.io.Files.asByteSink;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -25,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -32,6 +28,12 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
+import static com.google.common.io.Files.asByteSink;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
@@ -158,6 +160,13 @@ public class XProcSpecRunner {
 				reporter.skipping(testName);
 				continue; }
 			File test = tests.get(testName);
+			reporter.running(testName, focusTests.contains(testName));
+			if (!test.exists()) {
+				totalRun += 1;
+				totalErrors += 1;
+				reporter.result(1, 0, 1, 0, 0L, "* ERROR: Test file does not exist", "Test file does not exist: " + test);
+				continue;
+			}
 			File report = new File(reportsDir, testName + ".html");
 			File surefireReport = new File(surefireReportsDir, "TEST-" + testName + ".xml");
 			Map<String,List<String>> input = ImmutableMap.of("source", Arrays.asList(new String[]{asURI(test).toASCIIString()}));
@@ -165,28 +174,69 @@ public class XProcSpecRunner {
 			                                            "junit", asURI(surefireReport).toASCIIString());
 			Map<String,String> options = ImmutableMap.of("temp-dir", asURI(tempDir) + "/tmp/",
 			                                             "enable-log", "false");
-			reporter.running(testName, focusTests.contains(testName));
 			try {
 				engine.run(xprocspec.toASCIIString(), input, output, options, null);
 				if (!surefireReport.exists()) {
 					totalRun += 1;
 					totalErrors += 1;
-					reporter.result(1, 0, 1, 0, 0L, null, null); }
+					// no surefire report produced
+					reporter.result(1, 0, 1, 0, 0L, "* ERROR (no details available)", null); }
 				else {
 					Integer run = (Integer)evaluateXPath(surefireReport, "sum(/testsuites/@tests)", null, Integer.class);
 					Integer failures = (Integer)evaluateXPath(surefireReport, "number(/testsuites/@failures)", null, Integer.class);
 					Integer errors = (Integer)evaluateXPath(surefireReport, "number(/testsuites/@errors)", null, Integer.class);
 					Integer skipped = (Integer)evaluateXPath(surefireReport, "sum(/testsuites/*/number(@skipped))", null, Integer.class);
 					Long time = (Long)evaluateXPath(surefireReport, "number(/testsuites/@time)", null, Long.class);
+					String shortDesc = (String)evaluateXPath(
+						surefireReport,
+						"string-join(("
+						+ "/testsuites/testsuite[testcase[@status='FAILED'] or error]"
+						+ "           /(self::*[@name='compilationError' and @package='org.daisy.xprocspec']"
+						+ "              /error/@message/concat('* ERROR: ',"
+						+ "                                     (if (starts-with(.,'preprocess.xpl'))"
+						+ "                                      then 'Error loading test description'"
+						+ "                                      else concat('XProcSpec error in ',.))),"
+						+ "             self::*[not(@name='compilationError' and @package='org.daisy.xprocspec')]"
+						+ "              /(string(@name),"
+						+ "                testcase[@status='FAILED']/@name/concat('  * FAILURE: ',.),"
+						+ "                error/@message/concat('  * ERROR: ',"
+						+ "                                      (if (starts-with(.,'evaluate.xpl'))"
+						+ "                                      then 'Error evaluating assertion'"
+						+ "                                      else concat('XProcSpec error in ',.)))))"
+						+ "),'\n')",
+						null, String.class);
+					String longDesc = (String)evaluateXPath(
+						surefireReport,
+						"string-join(("
+						+ "/testsuites/testsuite"
+						+ "           /(error/@message/(if (starts-with(.,'evaluate.xpl'))"
+						+ "                             then 'Error evaluating assertion'"
+						+ "                             else if (starts-with(.,'preprocess.xpl'))"
+						+ "                             then 'Error loading test description'"
+						+ "                             else concat('XProcSpec error in ',.)),"
+						+ "             system-err/tokenize(.,'\n'))"
+						+ "),'\n')",
+						null, String.class);
+					if (longDesc.length() == 0) longDesc = null;
 					totalRun += run;
 					totalFailures += failures;
 					totalErrors += errors;
 					totalSkipped += skipped;
-					reporter.result(run, failures, errors, skipped, time, null, null); }}
+					reporter.result(run, failures, errors, skipped, time, shortDesc, longDesc); }}
 			catch (XProcExecutionException e) {
 				totalRun += 1;
 				totalErrors += 1;
-				reporter.result(1, 0, 1, 0, 0L, e.getMessage(), Throwables.getStackTraceAsString(e)); }
+				Throwable cause = e.getCause();
+				if (cause.getClass().toString().equals("class com.xmlcalabash.core.XProcException")) {
+					// Uncaught xproc error in xprocspec code
+					reporter.result(1, 0, 1, 0, 0L, "* ERROR: " + cause.getMessage(),
+					                Throwables.getStackTraceAsString(cause));
+				} else {
+					// Uncaught Java exception
+					reporter.result(1, 0, 1, 0, 0L, "* ERROR: Unexpected error happened: " + cause.getMessage(),
+					                Throwables.getStackTraceAsString(cause));
+				}
+			}
 		}
 		
 		long totalTime = TimeUnit.SECONDS.convert(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
@@ -307,12 +357,16 @@ public class XProcSpecRunner {
 			public void result(int run, int failures, int errors, int skipped, long time, String shortDesc, String longDesc) {
 				println("Tests run: %d, Failures: %d, Errors: %d, Skipped: %d, Time elapsed: %s sec%s",
 				        run, failures, errors, skipped, (new DecimalFormat("0.#")).format(time),
-				        (failures > 0 || errors > 0) ? " <<< FAILURE!" : "");
+				        (failures + errors > 0) ? " <<< " + (errors > 0 ? "ERROR" : "FAILURE") + "!" : "");
 				List<String> summary = errors > 0 ? testsInError : failures > 0 ? failedTests : null;
 				if (summary != null) {
-					if (shortDesc != null)
-						summary.add(currentTest + ": " + shortDesc);
-					else
+					if (shortDesc != null) {
+						String formatted = "";
+						for (String s : shortDesc.split("\\r?\\n"))
+							for (String ss : fillParagraph(s, 86).split("\\r?\\n"))
+								formatted += "\n    " + ss;
+						summary.add(currentTest + formatted);
+					} else
 						summary.add(currentTest); }
 				if (longDesc != null)
 					println(longDesc);
@@ -408,5 +462,37 @@ public class XProcSpecRunner {
 				throw new RuntimeException("Cannot evaluate to a " + type.getName()); }
 		catch (Exception e) {
 			throw new RuntimeException("Exception occured during XPath evaluation.", e); }
+	}
+	
+	private static String fillParagraph(String string, int maxColumns) {
+		String prefix = "";
+		Matcher m = Pattern.compile("^( *[-\\*]? *)[^ -\\*].*$").matcher(string);
+		if (m.matches())
+			prefix = m.group(1);
+		StringBuilder b = new StringBuilder();
+		b.append(prefix);
+		string = string.substring(prefix.length());
+		prefix = prefix.replaceAll("[-\\*]"," ");
+		int col = prefix.length();
+		boolean first = true;
+		for (String word : string.split("\\s+")) {
+			while (true) {
+				if (col == 0) {
+					if (!first)
+						b.append(prefix);
+					col += prefix.length();
+				}
+				if (col + word.length() <= maxColumns) {
+					b.append(word).append(" ");
+					col += (word.length() + 1);
+					break;
+				} else {
+					b.append("\n");
+					col = 0;
+				}
+			}
+			first = false;
+		}
+		return b.toString();
 	}
 }

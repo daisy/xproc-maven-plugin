@@ -82,7 +82,10 @@ public class XProcSpecRunnerTest {
 	
 	@Test
 	public void testFailure() {
-		Map<String,File> tests = ImmutableMap.of("test_identity_broken", new File(testsDir, "test_identity_broken.xprocspec"));
+		Map<String,File> tests = ImmutableMap.of(
+			// step does not behave as expected
+			"test_identity_broken", new File(testsDir, "test_identity_broken.xprocspec")
+		);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
@@ -97,6 +100,9 @@ public class XProcSpecRunnerTest {
 ""                                                                                       + "\n" +
 "Failed tests:"                                                                          + "\n" +
 "  test_identity_broken"                                                                 + "\n" +
+"    Identity "                                                                          + "\n" +
+"      * FAILURE: the option 'option.required' should have the value "                   + "\n" +
+"        'option.required-value' "                                                       + "\n" +
 ""                                                                                       + "\n" +
 "Tests run: 3, Failures: 1, Errors: 0, Skipped: 0"                                       + "\n"));
 		assertTrue(new File(reportsDir, "test_identity_broken.html").exists());
@@ -105,31 +111,69 @@ public class XProcSpecRunnerTest {
 	
 	@Test
 	public void testError() {
-		Map<String,File> tests = ImmutableMap.of("test_non_existing", new File(testsDir, "test_non_existing.xprocspec"),
-		                                         "non_existing_test", new File(testsDir, "non_existing_test.xprocspec"));
+		Map<String,File> tests = ImmutableMap.of(
+			// script file doesn't exist
+			"test_non_existing", new File(testsDir, "test_non_existing.xprocspec"),
+			// xprocspec file doesn't exist
+			"non_existing_test", new File(testsDir, "non_existing_test.xprocspec"),
+			// step throws an unexpected xproc error
+			"test_throw_error_unexpected", new File(testsDir, "test_throw_error_unexpected.xprocspec"),
+			// step throws a java error
+			"test_throw_java_error", new File(testsDir, "test_throw_java_error.xprocspec")
+		);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
+		                    new File(testsDir, "throw_java_error_implementation_java.xml"),
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
 		assertThat(stream.toString(), matchesPattern(
 "-------------------------------------------------------"                                + "\n" +
 " X P R O C S P E C   T E S T S"                                                         + "\n" +
 "-------------------------------------------------------"                                + "\n" +
 "Running test_non_existing"                                                              + "\n" +
-"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
-"Running non_existing_test"                                                              + "\n" +
-"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
-"org.daisy.maven.xproc.api.XProcExecutionException: Calabash failed to execute XProc"    + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< ERROR!"     + "\n" +
+"Error loading test description"                                                         + "\n" +
+"line: 464"                                                                              + "\n" +
+"column: 22"                                                                             + "\n" +
+""                                                                                       + "\n" +
+"                 * unable to load script: .../test-classes/xprocspec/non_existing.xpl"  + "\n" +
+"            "                                                                           + "\n" +
+"<x:was...><x:description..."                                                            + "\n" +
 "..."                                                                                    + "\n" +
-"Caused by: java.io.FileNotFoundException: .../non_existing_test.xprocspec ..."          + "\n" +
+"</x:description></x:was>"                                                               + "\n" +
+"Running non_existing_test"                                                              + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< ERROR!"     + "\n" +
+"Test file does not exist: .../test-classes/xprocspec/non_existing_test.xprocspec"       + "\n" +
+"Running test_throw_error_unexpected"                                                    + "\n" +
+"Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< ERROR!"     + "\n" +
+"Error evaluating assertion"                                                             + "\n" +
+"line: 68"                                                                               + "\n" +
+"column: 43"                                                                             + "\n" +
+""                                                                                       + "\n" +
+"                       * port not found: result"                                        + "\n" +
+"            "                                                                           + "\n" +
+"<x:was...><x:description..."                                                            + "\n" +
+"..."                                                                                    + "\n" +
+"...<c:error code=\"foo\"...>foobar</c:error>...</x:description>"                        + "\n" +
+"        </x:was>"                                                                       + "\n" +
+"Running test_throw_java_error"                                                          + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< ERROR!"     + "\n" +
+"java.lang.Error: boom!"                                                                 + "\n" +
 "..."                                                                                    + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
 "Tests in error:"                                                                        + "\n" +
 "  test_non_existing"                                                                    + "\n" +
-"  non_existing_test: Calabash failed to execute XProc"                                  + "\n" +
+"    * ERROR: Error loading test description "                                           + "\n" +
+"  non_existing_test"                                                                    + "\n" +
+"    * ERROR: Test file does not exist "                                                 + "\n" +
+"  test_throw_error_unexpected"                                                          + "\n" +
+"    Unexpected error "                                                                  + "\n" +
+"      * ERROR: Error evaluating assertion "                                             + "\n" +
+"  test_throw_java_error"                                                                + "\n" +
+"    * ERROR: Unexpected error happened: boom! "                                         + "\n" +
 ""                                                                                       + "\n" +
-"Tests run: 2, Failures: 0, Errors: 2, Skipped: 0"                                       + "\n"));
+"Tests run: 5, Failures: 0, Errors: 4, Skipped: 0"                                       + "\n"));
 		assertTrue(new File(reportsDir, "test_non_existing.html").exists());
 		assertTrue(new File(surefireReportsDir, "TEST-test_non_existing.xml").exists());
 		assertFalse(new File(reportsDir, "non_existing_test.html").exists());
@@ -167,12 +211,22 @@ public class XProcSpecRunnerTest {
 " X P R O C S P E C   T E S T S"                                                         + "\n" +
 "-------------------------------------------------------"                                + "\n" +
 "Running test_foo_catalog"                                                               + "\n" +
-"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< ERROR!"     + "\n" +
+"Error loading test description"                                                         + "\n" +
+"line: 464"                                                                              + "\n" +
+"column: 22"                                                                             + "\n" +
+""                                                                                       + "\n" +
+"                 * unable to load script: http://unexisting_domain/foo.xpl"             + "\n" +
+"            "                                                                           + "\n" +
+"<x:was...><x:description..."                                                            + "\n" +
+"..."                                                                                    + "\n" +
+"</x:description></x:was>"                                                               + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
 "Tests in error:"                                                                        + "\n" +
 "  test_foo_catalog"                                                                     + "\n" +
+"    * ERROR: Error loading test description "                                           + "\n" +
 ""                                                                                       + "\n" +
 "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0"                                       + "\n"));
 		File catalog = new File(testsDir, "foo_catalog.xml");
@@ -194,7 +248,8 @@ public class XProcSpecRunnerTest {
 	
 	@Test
 	public void testCustomJavaStep() {
-		Map<String,File> tests = ImmutableMap.of("test_foo_java", new File(testsDir, "test_foo_java.xprocspec"));
+		Map<String,File> tests = ImmutableMap.of(
+			"test_foo_java", new File(testsDir, "test_foo_java.xprocspec"));
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		xprocspecRunner.run(tests, reportsDir, surefireReportsDir, tempDir, null,
 		                    new Reporter.DefaultReporter(new PrintStream(stream, true)));
@@ -203,12 +258,24 @@ public class XProcSpecRunnerTest {
 " X P R O C S P E C   T E S T S"                                                         + "\n" +
 "-------------------------------------------------------"                                + "\n" +
 "Running test_foo_java"                                                                  + "\n" +
-"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< FAILURE!"   + "\n" +
+"Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: ... sec <<< ERROR!"     + "\n" +
+"Error evaluating assertion"                                                             + "\n" +
+"line: 68"                                                                               + "\n" +
+"column: 43"                                                                             + "\n" +
+""                                                                                       + "\n" +
+"                       * port not found: result"                                        + "\n" +
+"            "                                                                           + "\n" +
+"<x:was...><x:description..."                                                            + "\n" +
+"..."                                                                                    + "\n" +
+"...<c:error...>Misconfigured. No 'class' in configuration for ex:foo</c:error>...</x:description>" + "\n" +
+"        </x:was>"                                                                       + "\n" +
 ""                                                                                       + "\n" +
 "Results :"                                                                              + "\n" +
 ""                                                                                       + "\n" +
 "Tests in error:"                                                                        + "\n" +
 "  test_foo_java"                                                                        + "\n" +
+"    Foo "                                                                               + "\n" +
+"      * ERROR: Error evaluating assertion "                                             + "\n" +
 ""                                                                                       + "\n" +
 "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0"                                       + "\n"));
 		stream.reset();
@@ -227,7 +294,6 @@ public class XProcSpecRunnerTest {
 ""                                                                                       + "\n" +
 "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
 	}
-	
 	
 	@Test
 	public void testNothing() {
