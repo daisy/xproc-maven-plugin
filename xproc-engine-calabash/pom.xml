@@ -74,7 +74,7 @@
           <instructions>
             <!-- must match version from parent -->
             <Import-Package>
-              net.sf.saxon.*;version="[9.5.1,9.5.2)",
+              net.sf.saxon.*;version="[9.8.0,9.8.1)",
               *
             </Import-Package>
             <_dsannotations>*</_dsannotations>
