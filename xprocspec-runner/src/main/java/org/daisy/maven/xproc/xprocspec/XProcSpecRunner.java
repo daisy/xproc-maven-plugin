@@ -125,9 +125,9 @@ public class XProcSpecRunner {
 				engine.getClass().getMethod("setDefaultConfiguration", Reader.class).invoke(engine, new StringReader(
 				    "<xproc-config xmlns=\"http://xmlcalabash.com/ns/configuration\" xmlns:px=\"http://www.daisy.org/ns/xprocspec\">" +
 				    "  <implementation type=\"px:message\" class-name=\"org.daisy.maven.xproc.xprocspec.logging.calabash.impl.MessageStep\"/>" +
-				    "</xproc-config>")); }
-			catch (NoSuchMethodException e) {
-				System.out.println("WARNING: Please use a version of xproc-engine-calabash >= 1.0.1-SNAPSHOT");
+				    "</xproc-config>"));
+			} catch (NoSuchMethodException e) {
+				System.out.println("WARNING: Please use a version of xproc-engine-calabash >= 1.1.0");
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			} catch (InvocationTargetException e) {
