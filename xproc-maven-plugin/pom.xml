@@ -17,7 +17,7 @@
   <name>xproc-maven-plugin</name>
   
   <properties>
-    <it.xproc-engine-calabash.version>1.1.0</it.xproc-engine-calabash.version>
+    <it.xproc-engine-calabash.version>1.1.1-SNAPSHOT</it.xproc-engine-calabash.version>
   </properties>
   
   <dependencies>
@@ -42,12 +42,12 @@
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xproc-engine-api</artifactId>
-      <version>1.0.1</version>
+      <version>1.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xprocspec-runner</artifactId>
-      <version>1.1.0</version>
+      <version>1.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -232,6 +232,13 @@ public class XProcSpecRunnerTest {
 "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0"                                       + "\n"));
 	}
 	
+	@Test
+	public void testCustomAssertion() {
+		assertTrue(xprocspecRunner.run(ImmutableMap.of("test_custom_assertion",
+		                                               new File(testsDir, "test_custom_assertion.xprocspec")),
+		                               reportsDir, surefireReportsDir, tempDir, null,
+		                               new XProcSpecRunner.Reporter.DefaultReporter()));
+	}
 	
 	@Test
 	public void testNothing() {
