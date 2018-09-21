@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>xproc-engine-calabash</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>xproc-engine-calabash</name>
   
@@ -78,8 +78,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <tag>xproc-engine-calabash-1.1.1</tag>
-  </scm>
 </project>
