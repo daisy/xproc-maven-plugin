@@ -322,7 +322,10 @@ public class XProcSpecRunner {
 			}
 			
 			private void println(String format, Object... args) {
-				stream.format(format + "\n", args);
+				if (args.length > 0)
+					stream.format(format + "\n", args);
+				else
+					stream.print(format + "\n");
 			}
 			
 			public void init() {
