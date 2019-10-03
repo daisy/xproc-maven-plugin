@@ -12,7 +12,7 @@
   
   <groupId>org.daisy.maven</groupId>
   <artifactId>xproc-maven-plugin</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.1</version>
   <packaging>maven-plugin</packaging>
   <name>xproc-maven-plugin</name>
   
@@ -136,4 +136,8 @@
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <tag>v1.0.1</tag>
+  </scm>
 </project>
