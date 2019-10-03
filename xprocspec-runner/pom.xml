@@ -4,12 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.daisy.maven</groupId>
-    <artifactId>xproc-maven-plugin-parent</artifactId>
-    <version>1.2</version>
-    <relativePath>../parent/</relativePath>
+    <groupId>org.daisy</groupId>
+    <artifactId>daisy</artifactId>
+    <version>5</version>
+    <relativePath />
   </parent>
   
+  <groupId>org.daisy.maven</groupId>
   <artifactId>xprocspec-runner</artifactId>
   <version>1.2.3-SNAPSHOT</version>
   <packaging>bundle</packaging>
