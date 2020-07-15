@@ -12,46 +12,16 @@
         <groupId>org.daisy.libs</groupId>
         <artifactId>com.xmlcalabash</artifactId>
         <version>${com.xmlcalabash.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>com.thaiopensource</groupId>
-            <artifactId>jing</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>Saxon-HE</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.daisy.libs</groupId>
         <artifactId>saxon-he</artifactId>
-        <version>9.8.0.8</version>
-        <exclusions>
-          <exclusion>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>Saxon-HE</artifactId>
-          </exclusion>
-        </exclusions>
+        <version>${saxon.version}</version>
       </dependency>
       <dependency>
         <groupId>org.daisy.libs</groupId>
         <artifactId>jing</artifactId>
-        <version>20151127.0.0</version>
-        <exclusions>
-          <exclusion>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>saxon</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-          </exclusion>
-        </exclusions>
+        <version>${jing.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
