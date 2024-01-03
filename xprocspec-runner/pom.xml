@@ -12,7 +12,7 @@
   
   <groupId>org.daisy.maven</groupId>
   <artifactId>xprocspec-runner</artifactId>
-  <version>1.2.7</version>
+  <version>1.2.8-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>xprocspec-runner</name>
   
@@ -186,8 +186,4 @@
         </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <tag>v1.2.7</tag>
-  </scm>
 </project>
