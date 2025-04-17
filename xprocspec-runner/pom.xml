@@ -186,8 +186,4 @@
         </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <tag>v1.2.7</tag>
-  </scm>
 </project>
